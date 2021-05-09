@@ -5,7 +5,7 @@ def get_detector(config):
 
     if detector == 'mobilenet':
         return MobileNetDetector(config)
-    elif detector == 'yolo'
+    elif detector == 'yolo':
         raise Exception('"yolo" detector not yet implemented')
 
     raise Exception('model must be one of ["mobilenet"].')
