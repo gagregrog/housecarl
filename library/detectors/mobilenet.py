@@ -12,8 +12,8 @@ class MobileNetDetector:
     def __init__(self, config): 
         self.min_confidence = config['confidence']
         self.valid_classes = set(config['classes'])
-        model_path =  os.path.join(constants.models_path, 'MobileNetSSD_deploy.caffemodel')
-        prototxt_path =  os.path.join(constants.models_path, 'MobileNetSSD_deploy.prototxt')
+        model_path =  os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
+        prototxt_path =  os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.prototxt')
         self.net = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
 
 
