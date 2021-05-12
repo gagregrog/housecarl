@@ -67,23 +67,33 @@ def get_config(user_config_path=None):
 
     if default_config is None:
         raise Exception('Cannot find config.default.json')
-
-    if user_config is None:
-        warn('User config not found. Using config.default.json')
-        return default_config
     
+    merged_config = {}
     for key in default_config:
-        if not key in user_config:
-            user_config[key] = default_config[key]
+        key_found = key in user_config
+        no_key_found = not key_found
+        invalid_value = key_found and type(user_config.get(key)) != type(default_config[key])
+        
+        if no_key_found or invalid_value:
+            if key == 'rtsp_url':
+                raise Exception('rtsp_url is required in the form: "rtsp://<camera_name>:<some_uuid>@<some_ip>/live"')
+            elif invalid_value:
+                error('Invalid value passed for key: {}. Expected {} but got {}.'
+                    .format(key, str(type(default_config[key])), str(type(user_config[key])))
+                )
 
-    return user_config
+            merged_config[key] = default_config[key]
+        else:
+            merged_config[key] = user_config[key]
+
+    return merged_config
 
 def print_config(config):
     """
     Announce user configuration.
     """
 
-    [print('{}: {}'.format(k, v)) for k, v in config.items()]
+    [print('\t{}: {}'.format(k, v)) for k, v in config.items()]
 
 def num_args(func):
     spec = inspect.getfullargspec(func)
