@@ -91,3 +91,6 @@ def num_args(func):
     expected_num = len(args) - 1 if 'self' in args else len(args)
 
     return expected_num
+
+def intersection(list_a, list_b):
+    return list(set(list_a) & set(list_b))
