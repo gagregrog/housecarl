@@ -11,7 +11,7 @@ def main():
     utility.info('Loading detector...')
     detector = get_detector(config)
 
-    video = RTSP(config=config, frame_handler=lambda frame: detector.detect_and_draw(frame))
+    video = RTSP(config=config, frame_handler=lambda frame: detector.process_frame(frame))
 
     utility.info('Starting video stream...')
     video.start()
