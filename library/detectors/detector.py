@@ -19,6 +19,9 @@ class Detector:
         self.min_confidence = config['confidence']
         self.requested_classes = config['classes']
 
+    def set_all_classes(self, classes):
+        self.all_classes = classes
+        
     def _set_valid_classes(self):
         self.valid_classes = utility.intersection(self.requested_classes, self.all_classes)
 

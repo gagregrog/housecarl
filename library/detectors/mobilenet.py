@@ -5,6 +5,7 @@ import numpy as np
 from library import constants
 from library.detectors.detector import Detector
 
+MOBILENET_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 class MobileNetDetector(Detector):
     def __init__(self, config):
         self._set_all_classes()
@@ -13,7 +14,7 @@ class MobileNetDetector(Detector):
         super().__init__(config)
 
     def _set_all_classes(self):
-        self.all_classes = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+        self.set_all_classes(MOBILENET_CLASSES)
 
     def _read_net(self):
         model_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
