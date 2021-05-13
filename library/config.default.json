@@ -6,7 +6,11 @@
   "threaded": false,
   "frame_width": 1400,
   "detector": "mobilenet",
-  "detection_timeout": 20,
+  "detection_lapse_timeout": 5,
+  "min_detection_ratio": 0.5,
+  "min_detection_duration": 2,
+  "min_notification_interval": 30,
+  "max_detection_duration": 60,
   "classes": ["dog", "person"],
   "debug": false
 }
