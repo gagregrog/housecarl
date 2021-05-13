@@ -6,7 +6,7 @@ from imutils.video import VideoStream, FPS
 from library import utility
 
 class RTSP:
-    def __init__(self, config, frame_handler=None):
+    def __init__(self, config, frame_handler=None, on_exit=None):
         """
         Instantiate an object capable of managing a CV2 RTSP Video Stream.
 
@@ -22,6 +22,8 @@ class RTSP:
             If frame_handler has a function signature that accepts one argument, frame is passed.
             If frame_handler has a function signature that accepts two arguments, frame and then stop is passed.
             If frame_handler has a function signature that accepts any other number of arguments, an exception is raised.
+
+        on_exit is an optional function that will be called when the video loop is closed
         """
 
         self.fps = None
@@ -29,6 +31,7 @@ class RTSP:
         self.looping = False
         self.rtsp_url = None
         self.show_video = False
+        self.on_exit = on_exit
         self.frame_width = None
         self._verify_config(config)
         self.frame_handler = frame_handler
@@ -136,6 +139,9 @@ class RTSP:
         self.vs.stop()
         sleep(0.5)
         cv2.waitKey(1)
+        
+        if self.on_exit:
+            self.on_exit()
     
     @staticmethod
     def draw_detection(frame, detections):
