@@ -16,6 +16,7 @@ class Detector:
             self.inputQueue = Queue(maxsize=1)
             self.outputQueue = Queue(maxsize=1)
 
+            self.thread_active = True
             t = Thread(target=self._handle_input_queue, args=())
             t.daemon = True
             t.start()
@@ -81,7 +82,7 @@ class Detector:
         self.draw_detections(frame, detections)
 
     def _handle_input_queue(self):
-        while True:
+        while self.thread_active:
             # check to see if there is a frame in the input queue
             if not self.inputQueue.empty():
                 # grab the frame, run the detection, and add it to the queue
@@ -90,7 +91,10 @@ class Detector:
                 detections = self.get_valid_detections(frame)
                 self.outputQueue.put(detections)
 
-    def _process_frame_in_thread(self, frame):
+    def terminate_thread(self):
+        self.thread_active = False
+
+    def _process_frame_in_thread(self, frame, on_detections=None):
         current_detections = None
 
         # only put in new frames when we are ready to process them
@@ -102,14 +106,25 @@ class Detector:
 
         if current_detections is not None:
             self.last_detections = current_detections
-            # will ultimately need to handle detections here 
-            # possibly add to an accumulator or notifier class
 
         if self.show_detections and self.last_detections is not None:
             self.draw_detections(frame, self.last_detections)
+        
+        if on_detections:
+            args = (current_detections) if utility.num_args(on_detections) == 1 else (current_detections, frame)
+            on_detections(*args)
 
-    def process_frame(self, frame):
+    def _process_frame_without_thread(self, frame, on_detections=None):
+        detections = self.get_valid_detections(frame)
+        if self.show_detections:
+            self.draw_detections(frame, detections)
+        
+        if on_detections:
+            args = (detections) if utility.num_args(on_detections) == 1 else (detections, frame)
+            on_detections(*args)
+
+    def process_frame(self, frame, on_detections=None):
         if self.threaded:
-            self._process_frame_in_thread(frame)
+            self._process_frame_in_thread(frame, on_detections)
         else:
-            self.detect_and_draw(frame)
+            self._process_frame_without_thread(frame, on_detections)
