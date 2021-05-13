@@ -1,5 +1,6 @@
 from library import utility
 from library.video import RTSP
+from library.monitor import Monitor
 from library.detectors import get_detector
 
 def main():
@@ -11,7 +12,16 @@ def main():
     utility.info('Loading detector...')
     detector = get_detector(config)
 
-    video = RTSP(config=config, frame_handler=lambda frame: detector.process_frame(frame))
+    monitor = Monitor(config)
+
+    def handle_video_frame(frame):
+        detector.process_frame(frame, on_detections=monitor.handle_detections)
+
+    video = RTSP(
+        config=config,
+        frame_handler=handle_video_frame,
+        on_exit=detector.terminate_thread
+    )
 
     utility.info('Starting video stream...')
     video.start()
