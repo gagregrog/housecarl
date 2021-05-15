@@ -1,5 +1,7 @@
 from time import time
 
+from library import utility
+
 class DetectionSeries:
     def __init__(self, config):
         self.debug = config['debug']
@@ -42,13 +44,11 @@ class DetectionSeries:
 
     def detection_ratio_is_high_enough(self):
         detection_ratio = self.num_detections_in_series / len(self.frames)
-        print('detection_ratio: {}'.format(detection_ratio))
 
         return detection_ratio >= self.min_detection_ratio
 
     def detection_duration_is_long_enough(self):
         duration = time() - self.first_detection_at
-        print('detection_duration: {}'.format(duration))
 
         return duration >= self.min_detection_duration
 
@@ -60,103 +60,102 @@ class DetectionSeries:
             return
 
         self._sent_first_notification = True
-
-        print('\nSending first notification:\n\tA PERSON HAS BEEN DETECTED!')
         # TODO: implement push notification
 
     def process_series(self):
         # TODO: implement series processing
         # save the video?
         # upload the video?
-        print('\nPROCESSING DETECTION SERIES!')
-
+        pass
 
 class Monitor:
     def __init__(self, config):
         self.debug = config['debug']
         self.config = config
         self.detection_series = None
+        self.last_series_ended_at = None
         self.last_notification_sent_at = None
 
-         # minimum number of seconds between detection push notifications
-        self.min_notification_interval = config['min_notification_interval']
+         # number of seconds to rest after a detection series
+        self.post_detection_debounce = config['post_detection_debounce']
 
     def spawn_new_series(self):
+        utility.info('Person detected! Spawing new detection series.')
         self.detection_series = DetectionSeries(self.config)
 
+    def in_timeout(self):
+        if self.detection_series:
+            return False
+
+        if not self.last_series_ended_at:
+            time_ok = True
+        else:
+            time_since_last_series = time() - self.last_series_ended_at
+            time_ok = time_since_last_series >= self.post_detection_debounce
+
+        return not time_ok
+
     def handle_detections(self, detections, frame):
+        # If we've recently ended a series, pause for a beat
+        if self.in_timeout():
+            return
+            
+        # there are detections and there is not currently a series
         if self.new_detection_series_needed(detections):
             self.spawn_new_series()
 
-        if self.detection_series:
-            self.detection_series.add_frame(frame)
+        # Nothing below applies if we're not in a series
+        if not self.detection_series:
+            return
+
+        # add the frame irregardless of detections
+        self.detection_series.add_frame(frame)
 
         if detections:
             self.detection_series.inc_detections()
 
+        # perform all of the config['min'] checks
         if self.should_send_first_notification():
             self.send_first_notification()
+            return
 
-        if self.detection_lapse_exceeded() or self.max_life_reached():
+        max_life_reached = self.detection_series.max_life_reached()
+        detection_lapse_exceeded = self.detection_series.detection_lapse_interval_exceeded()
+
+        if max_life_reached or detection_lapse_exceeded:
+            if detection_lapse_exceeded:
+                utility.info('No detections for {} seconds'.format(self.config['detection_lapse_timeout']))
+            else:
+                utility.info('Max life of {} seconds reached'.format(self.config['max_detection_duration']))
+
             self.terminate_detection_series()
-
-    
-    def can_send_notification(self):
-        if not self.last_notification_sent_at:
-            return True
-
-        time_since_last_notification = time() - self.last_notification_sent_at
-        can_send = time_since_last_notification > self.min_notification_interval
-
-        return can_send
 
     def send_first_notification(self):
         self.last_notification_sent_at = time()
         self.detection_series.send_first_notification()
+        utility.info('Person verified. Sending push notification!')
 
 
     def should_send_first_notification(self):
-        not_in_series = not self.detection_series
-        cannot_send = not self.can_send_notification()
-        already_sent = self.detection_series and self.detection_series.first_notification_was_sent()
-
-        if cannot_send and not already_sent:
-            print('New person detected, but cannot send:\tToo soon!')
-
-        if not_in_series or cannot_send or already_sent:
+        if self.detection_series.first_notification_was_sent():
             return False
 
         duration_ok = self.detection_series.detection_duration_is_long_enough()
         ratio_ok = self.detection_series.detection_ratio_is_high_enough()
 
-        should_send = duration_ok and ratio_ok
-
-        return should_send
+        return duration_ok and ratio_ok
 
 
     def terminate_detection_series(self):
-        if self.detection_series and self.detection_series.first_notification_was_sent():
+        # we can assume the detection threshold was met,
+        # otherwise we wouldn't have sent a notification
+        if self.detection_series.first_notification_was_sent():
+            self.last_series_ended_at = time()
             self.detection_series.process_series()
+            utility.info('Processing detection series...')
+            utility.info('Waiting {} seconds before starting new detection series.\n'.format(self.config['post_detection_debounce']))
         
         self.detection_series = None
 
     def new_detection_series_needed(self, detections):
         return detections and not self.detection_series
-
-    def max_life_reached(self):
-        max_reached = self.detection_series and self.detection_series.max_life_reached()
-
-        if max_reached:
-            print('Max life reached!')
-
-        return max_reached
-
-    def detection_lapse_exceeded(self):
-        lapse_exceeded = self.detection_series and self.detection_series.detection_lapse_interval_exceeded()
-
-        if lapse_exceeded:
-            print('Detection lapse exceeded!')
-
-        return lapse_exceeded
-
-    

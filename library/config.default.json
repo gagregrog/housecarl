@@ -9,8 +9,8 @@
   "detection_lapse_timeout": 5,
   "min_detection_ratio": 0.5,
   "min_detection_duration": 2,
-  "min_notification_interval": 30,
   "max_detection_duration": 60,
+  "post_detection_debounce": 30,
   "classes": ["dog", "person"],
   "debug": false
 }
