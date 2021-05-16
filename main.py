@@ -39,7 +39,7 @@ if __name__ == "__main__":
         
         # don't show error stack if user terminates the script
         if type(exception).__name__ == 'KeyboardInterrupt':
-            utility.error('\n\n\tKeyboard Interrupt. Shutting down gracefully...')
+            print('\n\n\tKeyboard Interrupt. Shutting down gracefully...')
             sys.exit(1)
         else:
             # raise any other types of exceptions
