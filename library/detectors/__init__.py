@@ -1,1 +1,1 @@
-from .get_detector import get_detector
+from library.detectors.get_detector import get_detector

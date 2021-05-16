@@ -1,5 +1,5 @@
-from .yolo import YoloDetector
-from .mobilenet import MobileNetDetector
+from library.detectors.yolo import YoloDetector
+from library.detectors.mobilenet import MobileNetDetector
 
 def get_detector(config):
     detector = config['detector']

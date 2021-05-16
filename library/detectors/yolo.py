@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from library import constants
-from .detector import Detector
+from library.detectors.detector import Detector
 
 # constants
 SCALE = 0.00392

@@ -3,7 +3,7 @@ import json
 import inspect
 import argparse
 
-from .constants import config_path, default_config_path
+from library.constants import config_path, default_config_path
 
 def info(*args):
     """
