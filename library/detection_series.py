@@ -67,15 +67,17 @@ class DetectionSeries:
 
     def get_best_frame(self):
         best_frame = None
-        highest_detection = None
+        best_label = None
+        best_confidence = None
 
         for (frame, detections) in self.frames:
             for (label, confidence, box, color) in detections:
-                if not highest_detection or confidence > highest_detection:
-                    highest_detection = confidence
+                if not best_confidence or confidence > best_confidence:
+                    best_confidence = confidence
                     best_frame = frame
+                    best_label = label
 
-        return best_frame
+        return (best_frame, best_label, best_confidence)
 
     def process_series(self):
         # TODO: implement series processing

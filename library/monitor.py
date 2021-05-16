@@ -79,8 +79,12 @@ class Monitor:
 
         if self.pushover:
             utility.info('Sending push notification!')
-            frame = self.detection_series.get_best_frame()
-            self.pushover.send_push_notification('Person detected!', image=frame)
+            (frame, label, confidence) = self.detection_series.get_best_frame()
+            capital_label = utility.capitalize(label)
+            round_conf = utility.get_precision(confidence, 3)
+
+            message = '{} detected with confidence {}'.format(capital_label, round_conf)
+            self.pushover.send_push_notification(message, frame)
 
 
     def terminate_detection_series(self):
