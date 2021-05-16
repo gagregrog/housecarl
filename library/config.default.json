@@ -1,5 +1,7 @@
 {
   "rtsp_url": "",
+  "pushover_user_key": "",
+  "pushover_app_token": "",
   "min_confidence": 0.5,
   "show_video": true,
   "show_detections": true,
