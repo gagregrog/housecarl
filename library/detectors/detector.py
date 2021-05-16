@@ -5,6 +5,9 @@ from multiprocessing import Queue
 from library import utility
 from library.video import RTSP
 
+def alert_missing(cls):
+    utility.warn('Requested class "{}" does not exist in set of all classes.'.format(cls))
+
 class Detector:
     def __init__(self, config):
         self.__verify_child()
@@ -13,6 +16,7 @@ class Detector:
         self._set_colors()
 
         if self.threaded:
+            # TODO: threaded messes up the detection ratio
             self.inputQueue = Queue(maxsize=1)
             self.outputQueue = Queue(maxsize=1)
 
@@ -39,6 +43,9 @@ class Detector:
 
     def _set_valid_classes(self):
         self.valid_classes = utility.intersection(self.requested_classes, self.all_classes)
+
+        [alert_missing(cls) for cls in self.requested_classes if cls not in self.valid_classes]
+
 
     def _set_colors(self):
         self.colors = np.random.uniform(0, 255, size=(len(self.valid_classes), 3))
