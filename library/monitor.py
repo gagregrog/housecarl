@@ -1,6 +1,7 @@
 from time import time
 
 from library import utility
+from library.notifier.pushover import Pushover
 from library.detection_series import DetectionSeries
 class Monitor:
     def __init__(self, config):
@@ -8,10 +9,18 @@ class Monitor:
         self.config = config
         self.detection_series = None
         self.last_series_ended_at = None
-        self.last_notification_sent_at = None
 
-         # number of seconds to rest after a detection series
+        # number of seconds to rest after a detection series
         self.post_detection_debounce = config['post_detection_debounce']
+
+        self.initialize_pushover()
+
+    def initialize_pushover(self):
+        if self.config['pushover_user_key'] and self.config['pushover_app_token']:
+            self.pushover = Pushover(self.config)
+        else:
+            self.pushover = None
+            utility.info('Pushover keys not found. Notifications disabled.')
 
     def spawn_new_series(self):
         utility.info('Person detected! Spawing new detection series.')
@@ -43,13 +52,13 @@ class Monitor:
             return
 
         # add the frame irregardless of detections
-        self.detection_series.add_frame(frame)
+        self.detection_series.add_frame(frame, detections)
 
         if detections:
             self.detection_series.inc_detections()
 
         # perform all of the config['min'] checks
-        if self.should_send_first_notification():
+        if self.detection_series.should_send_first_notification():
             self.send_first_notification()
             return
 
@@ -65,19 +74,13 @@ class Monitor:
             self.terminate_detection_series()
 
     def send_first_notification(self):
-        self.last_notification_sent_at = time()
-        self.detection_series.send_first_notification()
-        utility.info('Person verified. Sending push notification!')
+        self.detection_series.mark_first_notification_sent()
+        utility.info('Person verified.')
 
-
-    def should_send_first_notification(self):
-        if self.detection_series.first_notification_was_sent():
-            return False
-
-        duration_ok = self.detection_series.detection_duration_is_long_enough()
-        ratio_ok = self.detection_series.detection_ratio_is_high_enough()
-
-        return duration_ok and ratio_ok
+        if self.pushover:
+            utility.info('Sending push notification!')
+            frame = self.detection_series.get_best_frame()
+            self.pushover.send_push_notification('Person detected!', image=frame)
 
 
     def terminate_detection_series(self):

@@ -23,8 +23,8 @@ class DetectionSeries:
         self.num_detections_in_series = 0
         self._sent_first_notification = False
 
-    def add_frame(self, frame):
-        self.frames.append(frame)
+    def add_frame(self, frame, detections):
+        self.frames.append((frame, detections))
 
     def inc_detections(self):
         self.num_detections_in_series += 1
@@ -50,15 +50,32 @@ class DetectionSeries:
 
         return duration >= self.min_detection_duration
 
+    def should_send_first_notification(self):
+        if self.first_notification_was_sent():
+            return False
+
+        duration_ok = self.detection_duration_is_long_enough()
+        ratio_ok = self.detection_ratio_is_high_enough()
+
+        return duration_ok and ratio_ok
+
     def first_notification_was_sent(self):
         return self._sent_first_notification
 
-    def send_first_notification(self):
-        if self.first_notification_was_sent():
-            return
-
+    def mark_first_notification_sent(self):
         self._sent_first_notification = True
-        # TODO: implement push notification
+
+    def get_best_frame(self):
+        best_frame = None
+        highest_detection = None
+
+        for (frame, detections) in self.frames:
+            for (label, confidence, box, color) in detections:
+                if not highest_detection or confidence > highest_detection:
+                    highest_detection = confidence
+                    best_frame = frame
+
+        return best_frame
 
     def process_series(self):
         # TODO: implement series processing
