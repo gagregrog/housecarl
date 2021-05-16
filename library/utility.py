@@ -104,3 +104,15 @@ def num_args(func):
 
 def intersection(list_a, list_b):
     return list(set(list_a) & set(list_b))
+
+def capitalize(word: str) -> str:
+    return word[0].upper() + word[1:]
+
+def get_precision(num: float, num_dec: int =3) -> float:
+    if isinstance(num, int):
+        return float(num)
+        
+    _int, _dec = str(num).split('.')
+    prec = int(_int) + float('0.' + _dec[:num_dec])
+
+    return prec
