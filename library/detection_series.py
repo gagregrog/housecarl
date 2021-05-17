@@ -11,7 +11,7 @@ class DetectionSeries:
         self.min_detection_ratio = config['min_detection_ratio']
         
         # min amount of time before notifying that a detection has occurred
-        self.min_detection_duration = config['min_detection_duration']
+        self.min_detection_frames = config['min_detection_frames']
         
         # max amount of time before terminating the series
         self.max_detection_duration = config['max_detection_duration']
@@ -20,6 +20,7 @@ class DetectionSeries:
         self.first_detection_at = now
         self.last_detection_at = now
         self.frames = []
+        self.num_frames_processed = 0
         self.num_detections_in_series = 0
         self._sent_first_notification = False
 
@@ -29,6 +30,9 @@ class DetectionSeries:
     def inc_detections(self):
         self.num_detections_in_series += 1
         self.last_detection_at = time()
+
+    def inc_frames_processed(self):
+        self.num_frames_processed += 1
 
     def max_life_reached(self):
         time_since_first_detection = time() - self.first_detection_at
@@ -45,19 +49,17 @@ class DetectionSeries:
 
         return detection_ratio >= self.min_detection_ratio
 
-    def detection_duration_is_long_enough(self):
-        duration = time() - self.first_detection_at
-
-        return duration >= self.min_detection_duration
+    def processed_enough_frames(self):
+        return self.num_frames_processed >= self.min_detection_frames
 
     def should_send_first_notification(self):
         if self.first_notification_was_sent():
             return False
 
-        duration_ok = self.detection_duration_is_long_enough()
+        processed_enough = self.processed_enough_frames()
         ratio_ok = self.detection_ratio_is_high_enough()
 
-        return duration_ok and ratio_ok
+        return processed_enough and ratio_ok
 
     def first_notification_was_sent(self):
         return self._sent_first_notification

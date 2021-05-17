@@ -7,6 +7,7 @@ class Monitor:
     def __init__(self, config):
         self.debug = config['debug']
         self.config = config
+        self.last_detections = []
         self.detection_series = None
         self.last_series_ended_at = None
 
@@ -39,6 +40,12 @@ class Monitor:
         return not time_ok
 
     def handle_detections(self, detections, frame):
+        # stale detections only occur when threaded
+        stale_detections = self.last_detections is detections
+
+        if not stale_detections:
+            self.last_detections = detections
+
         # If we've recently ended a series, pause for a beat
         if self.in_timeout():
             return
@@ -46,13 +53,18 @@ class Monitor:
         # there are detections and there is not currently a series
         if self.new_detection_series_needed(detections):
             self.spawn_new_series()
-
-        # Nothing below applies if we're not in a series
-        if not self.detection_series:
+        elif not self.detection_series:
+            # Nothing below applies if we're not in a series
             return
 
         # add the frame irregardless of detections
         self.detection_series.add_frame(frame, detections)
+
+        # frames come through unprocessed when threaded, 
+        # but we only want to count against frames that were
+        # processed for detections
+        if not stale_detections:
+            self.detection_series.inc_frames_processed()
 
         if detections:
             self.detection_series.inc_detections()
@@ -96,6 +108,7 @@ class Monitor:
             utility.info('Processing detection series...')
             utility.info('Waiting {} seconds before starting new detection series.\n'.format(self.config['post_detection_debounce']))
         
+        self.last_detections = []
         self.detection_series = None
 
     def new_detection_series_needed(self, detections):
