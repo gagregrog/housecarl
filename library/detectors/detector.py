@@ -16,7 +16,6 @@ class Detector:
         self._set_colors()
 
         if self.threaded:
-            # TODO: threaded messes up the detection ratio
             self.inputQueue = Queue(maxsize=1)
             self.outputQueue = Queue(maxsize=1)
 
@@ -24,7 +23,9 @@ class Detector:
             t = Thread(target=self._handle_input_queue, args=())
             t.daemon = True
             t.start()
-            self.last_detections = None
+
+            # use [] instead of None for identifiability
+            self.last_detections = []
 
     def __verify_child(self):
         if self.all_classes is None:
@@ -77,8 +78,9 @@ class Detector:
     def get_valid_detections(self, frame):
         all_detections = self._get_normalized_detections(frame)
         detections = self.filter_and_hydrate_normalized_detections(all_detections)
-
-        return detections
+        # return [] instead of None so we can determine
+        # if the detections are new or old (threaded)
+        return detections if detections else []
 
     def draw_detections(self, frame, detections):
         for detection in detections:
@@ -102,23 +104,18 @@ class Detector:
         self.thread_active = False
 
     def _process_frame_in_thread(self, frame, on_detections=None):
-        current_detections = None
-
         # only put in new frames when we are ready to process them
         if self.inputQueue.empty():
             self.inputQueue.put(frame)
 
         if not self.outputQueue.empty():
-            current_detections = self.outputQueue.get()
+            self.last_detections = self.outputQueue.get()
 
-        if current_detections is not None:
-            self.last_detections = current_detections
-
-        if self.show_detections and self.last_detections is not None:
+        if self.show_detections and self.last_detections:
             self.draw_detections(frame, self.last_detections)
         
         if on_detections:
-            args = (current_detections) if utility.num_args(on_detections) == 1 else (current_detections, frame)
+            args = (self.last_detections) if utility.num_args(on_detections) == 1 else (self.last_detections, frame)
             on_detections(*args)
 
     def _process_frame_without_thread(self, frame, on_detections=None):
