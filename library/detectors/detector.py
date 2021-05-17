@@ -3,7 +3,7 @@ from threading import Thread
 from multiprocessing import Queue
 
 from library import utility
-from library.video import RTSP
+from library.camera.image import draw_detection
 
 def alert_missing(cls):
     utility.warn('Requested class "{}" does not exist in set of all classes.'.format(cls))
@@ -84,7 +84,7 @@ class Detector:
 
     def draw_detections(self, frame, detections):
         for detection in detections:
-            RTSP.draw_detection(frame, detection)
+            draw_detection(frame, detection)
 
     def detect_and_draw(self, frame):
         detections = self.get_valid_detections(frame)

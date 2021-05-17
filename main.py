@@ -1,6 +1,6 @@
 import sys
 from library import utility
-from library.video import RTSP
+from library.camera import RTSP
 from library.monitor import Monitor
 from library.detectors import get_detector
 

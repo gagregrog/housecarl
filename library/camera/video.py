@@ -5,7 +5,7 @@ from imutils.video import VideoStream, FPS
 
 from library import utility
 
-class RTSP:
+class Video:
     def __init__(self, config, frame_handler=None, on_exit=None):
         """
         Instantiate an object capable of managing a CV2 RTSP Video Stream.
@@ -29,13 +29,12 @@ class RTSP:
         self.fps = None
         self.writer = None
         self.looping = False
-        self.rtsp_url = None
         self.show_video = False
         self.on_exit = on_exit
         self.frame_width = None
         self._verify_config(config)
         self.frame_handler = frame_handler
-        self.vs = VideoStream(self.rtsp_url)
+        self.vs = VideoStream(*self.vs_args)
         self._process_frame_handler()
 
 
@@ -61,10 +60,13 @@ class RTSP:
         """
         
         expected_types = {
-            'rtsp_url': str,
             'frame_width': int, 
             'show_video': bool, 
         }
+
+        # merge in all custom expected types
+        for (key, value) in self.expected_types.items():
+            expected_types[key] = value
 
         for (key, expected_type) in expected_types.items():
             value = config.get(key)
@@ -142,24 +144,3 @@ class RTSP:
         
         if self.on_exit:
             self.on_exit()
-    
-    @staticmethod
-    def draw_detection(frame, detections):
-        (label, confidence, box, color) = detections
-
-        text = '{}: {:.2f}'.format(label, confidence)
-
-        cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), color, 2)
-
-        x, y = box[:2]
-
-        if y - 10 > 0:
-            Y = y - 10
-            X = x
-        else:
-            Y = y + 10
-            X = x + 10
-
-        cv2.putText(frame, label, (X, Y), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, color, 2)
-

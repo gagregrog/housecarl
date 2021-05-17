@@ -3,7 +3,7 @@ import numpy as np
 from threading import Thread
 
 from library import utility
-from library.image import mat_to_bytes
+from library.camera.image import mat_to_bytes
 
 PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"
 
