@@ -2,7 +2,8 @@ from time import time
 
 from library import utility
 from library.notifier.pushover import Pushover
-from library.detection_series import DetectionSeries
+from library.monitor.detection_series import DetectionSeries
+
 class Monitor:
     def __init__(self, config):
         self.debug = config['debug']
