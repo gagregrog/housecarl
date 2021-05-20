@@ -1,5 +1,6 @@
 {
   "rtsp_url": "",
+  "mock_pushover": false,
   "pushover_user_key": "",
   "pushover_app_token": "",
   "min_confidence": 0.5,
@@ -14,5 +15,7 @@
   "max_detection_duration": 60,
   "post_detection_debounce": 30,
   "classes": ["dog", "person"],
+  "out_dir": "",
+  "min_disk_space": 10,
   "debug": false
 }
