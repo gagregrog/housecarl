@@ -1,13 +1,12 @@
-import sys
 from library import utility
 from library.camera import RTSP
 from library.monitor import Monitor
 from library.detectors import get_detector
 
-detector = None
+video = None
 
 def main():
-    global detector
+    global video
     args = utility.get_args()
     config = utility.get_config(args.get('config'))
     utility.info('Loaded configuration:')
@@ -21,10 +20,17 @@ def main():
     def handle_video_frame(frame):
         detector.process_frame(frame, on_detections=monitor.handle_detections)
 
+    def cleanup():
+        if monitor:
+            monitor.finish_recording()
+
+        if detector:
+            detector.terminate_thread()
+
     video = RTSP(
         config=config,
         frame_handler=handle_video_frame,
-        on_exit=detector.terminate_thread
+        on_exit=cleanup
     )
 
     utility.info('Starting video stream...')
@@ -34,13 +40,14 @@ if __name__ == "__main__":
     try:
         main()
     except (KeyboardInterrupt, Exception) as exception:
-        if detector:
-            detector.terminate_thread()
+        video.stop()
+
+        is_interrupt = type(exception).__name__ == 'KeyboardInterrupt'
         
-        # don't show error stack if user terminates the script
-        if type(exception).__name__ == 'KeyboardInterrupt':
-            print('\n\n\tKeyboard Interrupt. Shutting down gracefully...')
-            sys.exit(1)
-        else:
+        msg = 'Keyboard Interrupt' if is_interrupt else 'Unexpected Exception'
+        print('\n\n\t{}: Shutting down gracefully\n\n'.format(msg))
+ 
+        # show error stack if not user interrupt
+        if not is_interrupt:
             # raise any other types of exceptions
             raise exception
