@@ -46,10 +46,11 @@ class Writer:
         if not self.is_recording():
             timestamp = datetime.now()
             date = timestamp.strftime("%Y-%m-%d")
-            time = timestamp.strftime("%H:%M:%S")
+            time = timestamp.strftime("%Hh%Mm%Ss")
             date_dir = os.path.join(self.out_dir, date)
             Path(date_dir).mkdir(parents=True, exist_ok=True)
-            filepath = os.path.join(date_dir, '{}.avi'.format(time))
+            filename = '{}_{}.avi'.format(date, time)
+            filepath = os.path.join(date_dir, filename)
             self.last_recording_path = filepath
             self.start(filepath, self.fourcc, self.fps)
 
