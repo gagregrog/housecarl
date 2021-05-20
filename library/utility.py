@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 import inspect
 import argparse
 
@@ -116,3 +117,13 @@ def get_precision(num: float, num_dec: int =3) -> float:
     prec = int(_int) + float('0.' + _dec[:num_dec])
 
     return prec
+
+def bytes_to_gb(num_bytes):
+    return num_bytes / 1000000000
+
+def get_free_space():
+    home = os.path.expanduser('~')
+    (total, used, free) = shutil.disk_usage(home)
+
+    return bytes_to_gb(free)
+    
