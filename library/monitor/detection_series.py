@@ -19,13 +19,12 @@ class DetectionSeries:
         now = time()
         self.first_detection_at = now
         self.last_detection_at = now
-        self.frames = []
         self.num_frames_processed = 0
         self.num_detections_in_series = 0
-        self._sent_first_notification = False
-
-    def add_frame(self, frame, detections):
-        self.frames.append((frame, detections))
+        self._series_is_active = False
+        self.best_confidence = None
+        self.best_frame = None
+        self.best_label = None
 
     def inc_detections(self):
         self.num_detections_in_series += 1
@@ -45,44 +44,48 @@ class DetectionSeries:
         return time_since_last_detection >= self.detection_lapse_timeout
 
     def detection_ratio_is_high_enough(self):
-        detection_ratio = self.num_detections_in_series / len(self.frames)
+        num_processed = self.num_frames_processed
+        if not num_processed or num_processed < self.min_detection_frames:
+            return False
+
+        detection_ratio = self.num_detections_in_series / num_processed
 
         return detection_ratio >= self.min_detection_ratio
 
-    def processed_enough_frames(self):
-        return self.num_frames_processed >= self.min_detection_frames
+    def detected_in_enough_frames(self):
+        return self.num_detections_in_series >= self.min_detection_frames
 
-    def should_send_first_notification(self):
-        if self.first_notification_was_sent():
+    def should_activate_series(self):
+        if self.series_is_active():
             return False
 
-        processed_enough = self.processed_enough_frames()
+        processed_enough = self.detected_in_enough_frames()
         ratio_ok = self.detection_ratio_is_high_enough()
 
         return processed_enough and ratio_ok
 
-    def first_notification_was_sent(self):
-        return self._sent_first_notification
+    def series_is_activating(self):
+        series_is_activating = self.should_activate_series()
+        if series_is_activating:
+            self.activate_series()
 
-    def mark_first_notification_sent(self):
-        self._sent_first_notification = True
+        return series_is_activating
+
+
+    def series_is_active(self):
+        return self._series_is_active
+
+    def activate_series(self):
+        self._series_is_active = True
+
+    def process_frame(self, frame, detections):
+        self.inc_detections()
+
+        for (label, confidence, box, color) in detections:
+            if not self.best_confidence or confidence > self.best_confidence:
+                self.best_confidence = confidence
+                self.best_frame = frame
+                self.best_label = label
 
     def get_best_frame(self):
-        best_frame = None
-        best_label = None
-        best_confidence = None
-
-        for (frame, detections) in self.frames:
-            for (label, confidence, box, color) in detections:
-                if not best_confidence or confidence > best_confidence:
-                    best_confidence = confidence
-                    best_frame = frame
-                    best_label = label
-
-        return (best_frame, best_label, best_confidence)
-
-    def process_series(self):
-        # TODO: implement series processing
-        # save the video?
-        # upload the video?
-        pass
+        return (self.best_frame, self.best_label, self.best_confidence)
