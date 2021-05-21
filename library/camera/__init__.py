@@ -1,1 +1,1 @@
-from library.camera.rtsp import RTSP
+from library.camera.video import Video

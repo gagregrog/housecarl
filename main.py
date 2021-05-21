@@ -1,5 +1,5 @@
 from library import utility
-from library.camera import RTSP
+from library.camera import Video
 from library.monitor import Monitor
 from library.detectors import get_detector
 
@@ -27,11 +27,13 @@ def main():
         if detector:
             detector.terminate_thread()
 
-    video = RTSP(
+    vs_args = (config.get('rtsp_url'),)
+    video = Video(
         config=config,
         frame_handler=handle_video_frame,
-        on_exit=cleanup
-    )
+        on_exit=cleanup,
+        vs_args=vs_args
+    ).set_name('Wyze Cam')
 
     utility.info('Starting video stream...')
     video.start()
@@ -40,7 +42,8 @@ if __name__ == "__main__":
     try:
         main()
     except (KeyboardInterrupt, Exception) as exception:
-        video.stop()
+        if video:
+            video.stop()
 
         is_interrupt = type(exception).__name__ == 'KeyboardInterrupt'
         

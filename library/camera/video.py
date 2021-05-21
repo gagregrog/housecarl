@@ -5,15 +5,26 @@ from imutils.video import VideoStream, FPS
 
 from library import utility
 
+DEFAULT_SRC = 0
+DEFAULT_VS_ARGS = (DEFAULT_SRC)
+
 class Video:
-    def __init__(self, config, frame_handler=None, on_exit=None):
+    def __init__(
+        self,
+        config,
+        frame_handler=None,
+        on_exit=None,
+        vs_args=DEFAULT_VS_ARGS,
+        ):
         """
         Instantiate an object capable of managing a CV2 RTSP Video Stream.
 
         config is a required dict and must contain the following keys:
-            frame_width: int
             show_video: bool
+            frame_width: int
             rtsp_url: string
+
+        vs_args is an optional tuple or dict that will be spread into the VideoStream constructor
 
         frame_handler is an optional function and is passed the following:
             frame: The current CV2 frame to be processed
@@ -25,71 +36,62 @@ class Video:
 
         on_exit is an optional function that will be called when the video loop is closed
         """
-
-        self.fps = None
-        self.writer = None
-        self.looping = False
-        self.show_video = False
+        self.name = 'VideoStream'
         self.on_exit = on_exit
         self.frame_width = None
+        self.show_video = False
+
+        self.__fps = None
+        self.__looping = False
+        self.__pass_stop = False
+        self.__verify_frame_handler(frame_handler)
+
+        use_kwargs = type(vs_args).__name__ == 'dict'
+        self.__vs = VideoStream(**vs_args) if use_kwargs else VideoStream(*vs_args)
+
         self._verify_config(config)
-        self.frame_handler = frame_handler
-        self.vs = VideoStream(*self.vs_args)
-        self._process_frame_handler()
-
-
-    def _process_frame_handler(self):
-        """
-        Helper function to determine the number of arguments expected by the provided frame_handler.
-        """
-
-        if not self.frame_handler:
-            return
-
-        handler_args = utility.num_args(self.frame_handler)
-
-        if handler_args < 1 or handler_args > 2:
-            raise Exception('frame_handler must accept one or two arguments')
-        
-        self.handler_args = handler_args
-    
 
     def _verify_config(self, config):
         """
-        Helper function to verify that config values are of the correct type.
+        Helper function to verify that config values are of the correct type and then set them on the instance.
         """
         
+        # these are the types expected by Video
         expected_types = {
-            'frame_width': int, 
             'show_video': bool, 
+            'frame_width': int, 
         }
 
-        # merge in all custom expected types
-        for (key, value) in self.expected_types.items():
-            expected_types[key] = value
+        utility.process_expected_types(
+            source=config,
+            expected_types=expected_types,
+            destination=self
+        )    
 
-        for (key, expected_type) in expected_types.items():
-            value = config.get(key)
+    def __verify_frame_handler(self, frame_handler):
+        if frame_handler is not None:
+            num_args_wanted = utility.num_args(frame_handler)
+            
+            if num_args_wanted < 1 or num_args_wanted > 2:
+                raise Exception('frame_handler must accept (frame) or (frame, stop)')
 
-            if not value:
-                raise Exception('Expected config["{}"] but found None.'.format(key))
+            self.__pass_stop = num_args_wanted == 2
 
-            if not isinstance(value, expected_type):
-                raise Exception('Expected config["{}"] to be an instance of {} but found {}'.format(key, str(expected_type), str(type(value))))
+        self.frame_handler = frame_handler
 
-            setattr(self, key, value)
-    
+    def __call_frame_handler(self, frame):
+        args = (frame, self.stop) if self.__pass_stop else (frame,)
+        self.frame_handler(*args)
 
-    def _handle_loop(self):
+    def __run_loop(self):
         """
-        The mechanism to process video frames. Frame handler can initiate loop termination by 
+        The mechanism to process video frames. Frame handler can initiate loop termination by calling stop()
         """
 
-        self.looping = True
+        self.__looping = True
         
-        while self.looping:
-            frame = self.vs.read()
-
+        while self.__looping:
+            frame = self.__vs.read()
             if frame is None:
                 continue
 
@@ -97,15 +99,13 @@ class Video:
                 frame = imutils.resize(frame, width=self.frame_width)
 
             if self.frame_handler:
-                if self.handler_args == 1:
-                    self.frame_handler(frame)
-                else:
-                    self.frame_handler(frame, self.stop)
+                self.__call_frame_handler(frame)
 
-            self.fps.update()
+            self.__fps.update()
+            print('SHOW_VIDEO: {}'.format(self.show_video))
 
             if self.show_video:
-                cv2.imshow('WyzeCam', frame)
+                cv2.imshow(self.name, frame)
 
                 key = cv2.waitKey(1) & 0xFF
 
@@ -113,17 +113,21 @@ class Video:
                     self.stop()
                     break
 
+    def set_name(self, name):
+        self.name = name
+        return self
 
     def start(self):
         """
         Start the video stream and initiate the loop handler.
         """
 
-        self.vs.start()
+        self.__vs.start()
         sleep(2)
-        self.fps = FPS().start()
 
-        self._handle_loop()
+        self.__fps = FPS().start()
+
+        self.__run_loop()
 
         return self
 
@@ -131,15 +135,18 @@ class Video:
         """
         Terminate the video loop and cleanup processes.
         """
+        if not self.__looping:
+            return
+
+        self.__looping = False
+        self.__fps.stop()
+        print('Elapsed time: {:.2f}'.format(self.__fps.elapsed()))
+        sleep(0.5)
         
-        self.looping = False
-        self.fps.stop()
-        print('Elapsed time: {:.2f}'.format(self.fps.elapsed()))
-        print('Approx FPS: {:.2f}'.format(self.fps.fps()))
+        print('Approx FPS: {:.2f}'.format(self.__fps.fps()))
         cv2.waitKey(1)
         cv2.destroyAllWindows()
-        self.vs.stop()
-        sleep(0.5)
+        self.__vs.stop()
         cv2.waitKey(1)
         
         if self.on_exit:
