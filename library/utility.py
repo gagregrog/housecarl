@@ -127,3 +127,14 @@ def get_free_space():
 
     return bytes_to_gb(free)
     
+def process_expected_types(source, expected_types, destination):
+    for (key, expected_type) in expected_types.items():
+            value = source.get(key)
+
+            if not value:
+                raise Exception('Expected "{}" of type {} but found None.'.format(key, expected_type))
+
+            if not isinstance(value, expected_type):
+                raise Exception('Expected "{}" to be an instance of {} but found {}'.format(key, str(expected_type), type(value).__name__))
+
+            setattr(destination, key, value)
