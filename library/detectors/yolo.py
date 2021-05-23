@@ -21,7 +21,7 @@ class YoloDetector(BaseDetector):
     def __init__(self, config):
         self.__classes_path = os.path.join(constants.yolo_path, 'coco.names')
         self.__cfg_path = os.path.join(constants.yolo_path, 'yolov3.cfg')
-        self.__weights_path = os.path.join(constants.yolo_path, 'yolov3.cfg')
+        self.__weights_path = os.path.join(constants.yolo_path, 'yolov3.weights')
 
         self._set_all_classes()
         self._read_net()
@@ -29,22 +29,27 @@ class YoloDetector(BaseDetector):
         super().__init__(config)
 
     def __download_model_files(self):
-        classes_url = 'https://github.com/pjreddie/darknet/blob/master/data/coco.names'
-        weights_url = 'https://pjreddie.com/media/files/yolov3.weights'
-        cfg_url = 'https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg'
+        utility.ensure_dir(constants.yolo_path)
+    
+        # originally from https://github.com/pjreddie/darknet
+        classes_url = 'https://drive.google.com/uc?export=download&id=1Tfm-FzvEy6jtyj3PUyK0g3SX3Piqwh7Z'
+        weights_file_id = '1T7n50ZfSQJmAAlkvUda8jwQ8_D8TYNM2'
+        cfg_url = 'https://drive.google.com/uc?export=download&id=1XX9jcuhr5QuRKMlRlV9G4usXLYBP1v78'
 
         utility.download_file(classes_url, self.__classes_path)
-        utility.download_file(weights_url, self.__weights_path)
         utility.download_file(cfg_url, self.__cfg_path)
+        utility.download_large_file_from_google_drive(weights_file_id, self.__weights_path)
 
     def _set_all_classes(self):
         if not os.path.exists(self.__classes_path):
             self.__download_model_files()
 
         # read the class names from yolov3.txt
-        with open(self.classesPath, 'r') as f:
+        with open(self.__classes_path, 'r') as f:
+            all_classes = [line.strip() for line in f.readlines()]
+            
             # self.set_all_classes is inherited
-            self.set_all_classes([line.strip() for line in f.readlines()])
+            self.set_all_classes(all_classes)
 
     def _read_net(self):
         # read the pretrained model and configs
