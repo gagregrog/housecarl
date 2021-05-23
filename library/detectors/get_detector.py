@@ -1,7 +1,7 @@
 from library.detectors.yolo import YoloDetector
 from library.detectors.mobilenet import MobileNetDetector
 
-def get_detector(config):
+def Detector(config):
     model = config['model']
 
     if model == 'mobilenet':

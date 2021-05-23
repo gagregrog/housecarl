@@ -1,10 +1,9 @@
-from library.camera.writer import Writer
-from library.notifier.pushover import Pushover
-from library.cli import CLI
 from library import utility
-from library.camera import Video
+from library.cli import CLI
 from library.monitor import Monitor
-from library.detectors import get_detector
+from library.notifier import Pushover
+from library.detectors import Detector
+from library.camera import Video, Writer
 
 video = None
 
@@ -14,7 +13,7 @@ def main():
     cli.print_config()
 
     utility.info('Loading detector...')
-    detector = get_detector(cli.get_detector_config())
+    detector = Detector(cli.get_detector_config())
 
     pushover = None
     pushover_config = cli.get_pushover_config()
