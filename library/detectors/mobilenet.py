@@ -21,9 +21,13 @@ class MobileNetDetector(BaseDetector):
         self.set_all_classes(MOBILENET_CLASSES)
 
     def __download_model_files(self):
-        # https://github.com/chuanqi305/MobileNet-SSD
-        model_url = 'https://drive.google.com/open?id=0B3gersZ2cHIxZi13UWF0OXBsZzA'
-        prototxt_url = 'https://drive.google.com/open?id=0B3gersZ2cHIxWGEzbG5nSXpNQzA'
+        utility.ensure_dir(constants.mobilenet_path)
+
+        # originally from https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/
+        model_url = 'https://drive.google.com/uc?export=download&id=1Im7t557U3eAajnKFSt5jD1HHKyuCBi0o'
+
+        prototxt_url = 'https://drive.google.com/uc?export=download&id=1B0-S_Dd_tKljtMy-5-Yqn2biDrTVBZ3q'
+        
         # we should parallelize this
         utility.download_file(model_url, self.model_path)
         utility.download_file(prototxt_url, self.prototxt_path)
