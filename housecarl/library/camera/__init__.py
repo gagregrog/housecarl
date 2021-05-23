@@ -1,2 +1,2 @@
-from library.camera.video import Video
-from library.camera.writer import Writer
+from housecarl.library.camera.video import Video
+from housecarl.library.camera.writer import Writer

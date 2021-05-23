@@ -1,1 +1,1 @@
-from library.detectors.get_detector import Detector
+from housecarl.library.detectors.get_detector import Detector

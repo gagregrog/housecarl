@@ -1,11 +1,11 @@
 from time import sleep
 
-from library import utility
-from library.cli import CLI
-from library.monitor import Monitor
-from library.notifier import Pushover
-from library.detectors import Detector
-from library.camera import Video, Writer
+from housecarl.library import utility
+from housecarl.library.cli import CLI
+from housecarl.library.monitor import Monitor
+from housecarl.library.notifier import Pushover
+from housecarl.library.detectors import Detector
+from housecarl.library.camera import Video, Writer
 
 def __main(video):
     cli = CLI().process()

@@ -1,1 +1,1 @@
-from .carl import carl
+from housecarl.carl import carl

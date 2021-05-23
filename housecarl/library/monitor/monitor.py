@@ -1,7 +1,7 @@
 from time import time
 
-from library import utility
-from library.monitor.detection_series import DetectionSeries
+from housecarl.library import utility
+from housecarl.library.monitor.detection_series import DetectionSeries
 
 class Monitor:
     def __init__(self, config, writer=None, pushover=None):

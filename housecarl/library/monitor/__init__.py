@@ -1,1 +1,1 @@
-from library.monitor.monitor import Monitor
+from housecarl.library.monitor.monitor import Monitor

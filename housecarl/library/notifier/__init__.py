@@ -1,1 +1,1 @@
-from library.notifier.pushover import Pushover
+from housecarl.library.notifier.pushover import Pushover

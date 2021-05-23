@@ -3,8 +3,8 @@ import json
 import argparse
 from time import sleep
 
-from library import utility
-from library.constants import config_path, default_config_path
+from housecarl.library import utility
+from housecarl.library.constants import config_path, default_config_path
 
 class CLI:
     def __init__(self):

@@ -2,8 +2,8 @@ import requests
 import numpy as np
 from threading import Thread
 
-from library import utility
-from library.camera.image import mat_to_bytes
+from housecarl.library import utility
+from housecarl.library.camera.image import mat_to_bytes
 
 PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"
 
