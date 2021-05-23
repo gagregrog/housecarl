@@ -52,18 +52,23 @@ class CLI:
         Read the passed config path and the default config path, parsing each.
         """
         if self.__args.get('config') is not None:
-            user_config_path = self.__args.get('config')
+            self.__user_config_path = self.__args.get('config')
         else:    
-            user_config_path = config_path
+            self.__user_config_path = config_path
 
-        self.__user_config = CLI.read_json(user_config_path)
         self.__default_config = CLI.read_json(default_config_path)
+        self.__user_config = CLI.read_json(self.__user_config_path)
 
         if self.__default_config is None:
-            raise Exception('Cannot find config.default.json')
+            raise Exception('Cannot find {}'.format(default_config_path))
         elif self.__user_config is None:
             self.__init_config()
-            raise Exception('Cannot find config.json. File initialized to {}'.format(config_path))
+
+    def __init_config(self):
+        self.__user_config = self.__default_config
+        utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'pre': '\n\t'})
+        utility.copy_file(default_config_path, self.__user_config_path)
+
 
     def __merge_configs(self):
         """
@@ -108,10 +113,15 @@ class CLI:
                 user_value = user_config_group.get(key)
                 user_value_type = utility.get_typename(user_value)
                 default_value_type = utility.get_typename(default_value)
-                invalid_value = user_key_found and user_value_type != default_value_type
+                invalid_value_type = user_key_found and user_value_type != default_value_type
 
-                if invalid_value:
-                    utility.error('Invalid value passed for key: {}. Expected {} but got {}.'
+                # allow string or int for src
+                if key == 'src' and invalid_value_type:
+                    if user_value_type == 'str' or user_value_type == 'int':
+                        invalid_value_type = False
+
+                if invalid_value_type:
+                    utility.error('Invalid type passed for key: {}. Expected {} but got {}.'
                         .format(key, default_value_type, user_value_type)
                     )
                     raise Exception('Invalid user config value')
