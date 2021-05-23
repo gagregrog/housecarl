@@ -123,4 +123,4 @@ dmypy.json
 config.json
 .DS_STORE
 .vscode
-yolov3.weights
+models
