@@ -8,7 +8,7 @@
     "min_disk_space": 10
   },
   "video": {
-    "src": "",
+    "src": 0,
     "width": 1400,
     "display": true,
     "name": "Detections"
