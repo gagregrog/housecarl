@@ -43,7 +43,7 @@ class Pushover:
         json_response = r.json()
 
         if json_response.get('status') != 1:
-            utility.error('Pushover error!')
+            utility.error('Pushover error!\n')
             print(json_response)
 
     def send_push_notification(self, message: str, image: np.ndarray = None):
