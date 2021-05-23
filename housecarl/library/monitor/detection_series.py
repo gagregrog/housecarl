@@ -1,5 +1,6 @@
 from time import time
-from library import utility
+
+from housecarl.library import utility
 
 class DetectionSeries:
     def __init__(self, config):

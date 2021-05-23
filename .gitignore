@@ -125,3 +125,4 @@ dmypy.json
 models*
 *.json
 recordings
+!config.default.json

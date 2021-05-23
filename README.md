@@ -20,10 +20,18 @@ What can [Carl](https://en.wikipedia.org/wiki/Housecarl) do for you?
 
 Make sure you have followed the [installation instructions](#installation).
 
-Once all dependencies have been installed, you can run without any configuration with: 
+Once all dependencies have been installed, you can run carl from a terminal prompt.
+
+If you've installed by cloning the git repo, run: 
 
 ```bash
 python main.py
+```
+
+If you've installed as a package via `pipx`, simply run:
+
+```bash
+carl
 ```
 
 See the [configuration options](#configuration) for fine grain control.
@@ -32,7 +40,7 @@ See the available overrides passable as [CLI options](#cli-overrides).
 
 ### Configuration
 
-By default, the app will search for `config.json` at the root of the project. If this file is not found, it will load the default configuration found at [library/config.default.json](library/config.default.json).
+By default, the app will search for `config.json` at the root of the project. If this file is not found, it will load the default configuration found at [housecarl/library/config.default.json](housecarl/library/config.default.json).
 
 #### Configuration Options
 
@@ -44,7 +52,7 @@ The configuration options fall into five main categories:
   - `writer` - Omit this category to disable event recordings
   - `pushover` - Omit this category to disable event notifications
 
-To view all default values, please reference the [default configuration file](/library/config.default.json). These defaults will be merged with any configuration options you provide.
+To view all default values, please reference the [default configuration file](housecarl/library/config.default.json). These defaults will be merged with any configuration options you provide.
 
 The behavior of each option is explained below:
 
@@ -77,7 +85,7 @@ Omit this category to disable event recordings.
 
   - `fps`: `int` - Stream FPS may vary, so you may find this needs tweaking depending on the video source.
   - `timeout`: `int` or `float` - Amount of time the writer thread should pause before looking for new frames to write.
-  - `out_dir`: `str` - Absolute path to a directory for saving videos. Defaults to [/recordings](/recordings). Video writer will create subdirectories by date.
+  - `out_dir`: `str` - Absolute path to a directory for saving videos. Defaults to [recordings](recordings). Video writer will create subdirectories by date.
   - `fourcc`: `str` - [FOURCC](https://www.fourcc.org/) codec to use for writing.
   - `buffer_size`: `int` - Size of the writer's queue. Larger values result in more "cushion" on either side of an event recording.
   - `min_disk_space`: `int` or `float` - If you have less than this quantity of free space, recordings will not be saved.
@@ -112,6 +120,32 @@ Some configuration options can be overridden by passing CLI options.
 ## Setup
 
 ### Installation
+
+Depending on your intentions, you can either [install via pipx](#pipx-install) or  do a traditional [git install](#git-install).
+
+#### pipx install
+
+If you want to use the app and won't be developing any new features, consider installing via [pipx](https://pipxproject.github.io). This has many benefits. For example, it will handle creating a virtual environment for you, and it will also allow you to invoke carl via his alias `carl`.
+
+1. Ensure you have [`pipx` installed](https://pipxproject.github.io/pipx/installation/).
+    - If you are on a mac with homebrew, you can `brew install pipx`
+2. Install `carl` with `pipx` as follows:
+    - You can install the `main` branch with:
+      ```bash
+      pipx install git+https://github.com/RobertMcReed/housecarl.git
+      ```
+    - Or you can specify a branch to install with:
+      ```bash
+      pipx install git+https://github.com/RobertMcReed/housecarl.git@branch_name
+      ```
+    - Or install a specific release with:
+      ```bash
+      pipx install https://github.com/RobertMcReed/housecarl/archive/some_release.zip
+      ```
+
+#### Git Install
+
+If you plan on changing any features, you'll likely want to follow a traditional git install.
 
 1. Clone the repository with `git clone https://github.com/RobertMcReed/housecarl.git`
 2. Create and activate a virtual environment using your favorite method.

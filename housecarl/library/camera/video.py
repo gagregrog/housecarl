@@ -3,7 +3,7 @@ import imutils
 from time import sleep, time
 from imutils.video import VideoStream, FPS
 
-from library import utility
+from housecarl.library import utility
 
 TIMEOUT = 5
 DEFAULT_SRC = 0

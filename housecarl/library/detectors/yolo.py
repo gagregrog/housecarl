@@ -2,8 +2,8 @@ import os
 import cv2
 import numpy as np
 
-from library import constants, utility
-from library.detectors.base_detector import BaseDetector
+from housecarl.library import constants, utility
+from housecarl.library.detectors.base_detector import BaseDetector
 
 # constants
 SCALE = 1/255
