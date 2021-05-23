@@ -39,12 +39,14 @@ class CLI:
 
         ap = argparse.ArgumentParser()
         ap.add_argument('-c', '--config', help='Path to config.json', default=None)
-        ap.add_argument('--mock-push', action="store_true")
-        ap.add_argument('--no-push', action="store_true")
-        ap.add_argument('--no-write', action="store_true")
-        ap.add_argument('--no-video', action="store_true")
-        ap.add_argument('--show-video', action="store_true")
-        ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera')
+        ap.add_argument('--mock-push', action="store_true", help="Don't send push notifications, but show messages in terminal.")
+        ap.add_argument('--no-push', action="store_true", help="Don't send push notifications.")
+        ap.add_argument('--no-write', action="store_true", help="Don't record video.")
+        ap.add_argument('--no-video', action="store_true", help="Suppress video.")
+        ap.add_argument('--show-video', action="store_true", help="Show video.")
+        ap.add_argument('--threaded', action="store_true", help="Run the detections in a separate thread.")
+        ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera"')
+        ap.add_argument('--model', default=None, help='Model to use. Either "yolo" or "mobilenet".')
 
         self.__args = vars(ap.parse_args())
 
@@ -148,18 +150,20 @@ class CLI:
         """
         Overwrite any config values with args passed at invocation.
         """
-        if self.__args.get('mock_push'):
-            self.__update_config('pushover', 'mock', True)
+        self.__override_if_arg_exists('pushover', 'mock', argname='mock_push')
+        self.__override_if_arg_exists('video', 'display', argname='show_video')
+        self.__override_if_arg_exists('video', 'display', argname='hide_video', override=False)
+        self.__override_if_arg_exists('video', 'src')
+        self.__override_if_arg_exists('detector', 'model')
+        self.__override_if_arg_exists('detector', 'threaded')
 
-        if self.__args.get('show_video'):
-            self.__update_config('video', 'display', True)
-        
-        if self.__args.get('no_video'):
-            self.__update_config('video', 'display', False)
+    def __override_if_arg_exists(self, config_group, config_key, argname=None, override=None):
+        resolved_key = argname if argname else config_key
+        val = self.__args.get(resolved_key)
 
-        if self.__args.get('src') is not None:
-            src = self.__args.get('src')
-            self.__update_config('video', 'src', src)
+        if val is not None and val is not False:
+            resolved_val = val if override is None else override
+            self.__update_config(config_group, config_key, resolved_val)
     
     def __get_config_group(self, key):
         group = self.__config.get(key)
