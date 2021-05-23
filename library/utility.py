@@ -13,7 +13,7 @@ def _log(log_type: str, *args) -> None:
     prefix = '' if 'pre' not in last_arg else last_arg.get('pre')
     data = args if not prefix else args[:-1]
 
-    print('{}[{}]'.format(prefix, log_type.upper()), *data)
+    print('\n{}[{}]'.format(prefix, log_type.upper()), *data)
 
 info = lambda *args: _log('info', *args)
 warn = lambda *args: _log('warn', *args)
@@ -67,7 +67,41 @@ def download_file(url, destination):
     info('Downloading file: {}\n From: {}\n'
         .format(destination, url)
     )
-    ensure_dir(destination)
     r = requests.get(url)
+    
     with open(destination, 'wb') as f:
         f.write(r.content)
+
+# https://stackoverflow.com/questions/25010369/wget-curl-large-file-from-google-drive/39225039#39225039
+def download_large_file_from_google_drive(file_id, destination):
+    info('Downloading large file: {}\n Google Drive File ID: {}\n'
+        .format(destination, file_id)
+    )
+    
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                return value
+
+        return None
+
+    def save_response_content(response, destination):
+        CHUNK_SIZE = 32768
+
+        with open(destination, "wb") as f:
+            for chunk in response.iter_content(CHUNK_SIZE):
+                if chunk: # filter out keep-alive new chunks
+                    f.write(chunk)
+
+    URL = "https://drive.google.com/uc?export=download"
+
+    session = requests.Session()
+
+    response = session.get(URL, params = {'id' : file_id}, stream = True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {'id' : file_id, 'confirm' : token}
+        response = session.get(URL, params = params, stream = True)
+
+    save_response_content(response, destination)
