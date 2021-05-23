@@ -14,7 +14,7 @@
     "name": "Detections"
   },
   "pushover": {
-    "mock": false,
+    "mock": true,
     "user_key": "",
     "api_token": ""
   },
