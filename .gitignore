@@ -124,3 +124,4 @@ dmypy.json
 .vscode
 models
 *.json
+recordings
