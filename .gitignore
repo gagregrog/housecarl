@@ -122,6 +122,6 @@ dmypy.json
 
 .DS_STORE
 .vscode
-models
+models*
 *.json
 recordings
