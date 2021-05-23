@@ -7,40 +7,64 @@ from threading import Thread
 from collections import deque
 from datetime import datetime
 
-from library import utility
+from library import utility, constants
 
 # https://www.pyimagesearch.com/2016/02/29/saving-key-event-video-clips-with-opencv/
 class Writer:
     def __init__(self, config) -> None:
-        self.min_disk_space = config.get('min_disk_space')
-        self.buf_size = config.get('buffer_size') or 64
-        self.timeout = config.get('timeout') or 1.0
-        self.out_dir = os.path.abspath(os.path.expanduser(config['out_dir']))
-        self.fps = config.get('fps') or 15
-        fourcc = config.get('fourcc') or 'MJPG'
-        self.fourcc = cv2.VideoWriter_fourcc(*fourcc)
+        utility.set_properties(config, self)
+        self.out_dir = constants.recordings_path if self.out_dir == '' else os.path.abspath(os.path.expanduser(self.out_dir))
 
-        self.frames = deque(maxlen=self.buf_size)
-        self.Q = None
-        self.writer = None
-        self.thread = None
-        self.recording = False
+        self.__Q = None
+        self.__writer = None
+        self.__thread = None
+        self.__recording = False
+        self.__last_recording_path = None
+        self.__frames = deque(maxlen=self.buffer_size)
+        self.__fourcc = cv2.VideoWriter_fourcc(*self.fourcc)
+        
+    def __start(self, output_path):
+        self.__recording = True
+        (frame_height, frame_width) = self.__frames[0].shape[:2]
+        dimensions = (frame_width, frame_height)
+        self.__writer = cv2.VideoWriter(output_path, self.__fourcc, self.fps, dimensions, True)
+        self.__Q = Queue()
+
+        # add all frames in the deque to the queue
+        [self.__Q.put(self.__frames[i - 1]) for i in range(len(self.__frames), 0, -1)]
+
+        # start a thread to write frames to the vide file
+        self.__thread = Thread(target=self.__write, args=())
+        self.__thread.daemon = True
+        self.__thread.start()
+
+    def __write(self):
+        while True:
+            # terminate the thread when we are no longer recording
+            if not self.__recording:
+                return
+
+            # if we have frames in the queue, write them
+            if not self.__Q.empty():
+                frame = self.__Q.get()
+                self.__writer.write(frame)
+            else:
+                # if we have no frames to write, sleep so we don't waste CPU cycles
+                time.sleep(self.timeout)
+
+    def __flush(self):
+        # write all remaining frames to the file
+        while not self.__Q.empty():
+            frame = self.__Q.get()
+            self.__writer.write(frame)
 
     def is_recording(self):
-        return self.recording
+        return self.__recording
 
-    def update(self, frame):
-        # update the frames buffer
-        self.frames.appendleft(frame)
-
-        # if we're recording, put the frame in the queue
-        if self.recording:
-            self.Q.put(frame)
-
-    def start_recording(self):
+    def start(self):
         free_disk_space = utility.get_free_space()
         if free_disk_space < self.min_disk_space:
-            utility.warn('Remaining disk space is too small to record video: {} < {}'.format(free_disk_space, self.min_disk_space))
+            utility.error('Remaining disk space is too small to record video: {} < {}'.format(free_disk_space, self.min_disk_space))
             return
 
         if not self.is_recording():
@@ -48,52 +72,23 @@ class Writer:
             date = timestamp.strftime("%Y-%m-%d")
             time = timestamp.strftime("%Hh%Mm%Ss")
             date_dir = os.path.join(self.out_dir, date)
-            Path(date_dir).mkdir(parents=True, exist_ok=True)
+            utility.ensure_dir(date_dir)
             filename = '{}_{}.avi'.format(date, time)
             filepath = os.path.join(date_dir, filename)
-            self.last_recording_path = filepath
-            self.start(filepath, self.fourcc, self.fps)
+            self.__last_recording_path = filepath
+            self.__start(filepath)
 
-        
+    def update(self, frame):
+        # update the frames buffer
+        self.__frames.appendleft(frame)
 
-    def start(self, output_path, fourcc, fps):
-        self.recording = True
-        (frame_height, frame_width) = self.frames[0].shape[:2]
-        dimensions = (frame_width, frame_height)
-        self.writer = cv2.VideoWriter(output_path, fourcc, fps, dimensions, True)
-        self.Q = Queue()
-
-        # add all frames in the deque to the queue
-        [self.Q.put(self.frames[i - 1]) for i in range(len(self.frames), 0, -1)]
-
-        # start a thread to write frames to the vide file
-        self.thread = Thread(target=self.write, args=())
-        self.thread.daemon = True
-        self.thread.start()
-
-    def write(self):
-        while True:
-            # terminate the thread when we are no longer recording
-            if not self.recording:
-                return
-
-            # if we have frames in the queue, write them
-            if not self.Q.empty():
-                frame = self.Q.get()
-                self.writer.write(frame)
-            else:
-                # if we have no frames to write, sleep so we don't waste CPU cycles
-                time.sleep(self.timeout)
-
-    def flush(self):
-        # write all remaining frames to the file
-        while not self.Q.empty():
-            frame = self.Q.get()
-            self.writer.write(frame)
+        # if we're recording, put the frame in the queue
+        if self.__recording:
+            self.__Q.put(frame)
 
     def finish(self):
-        self.recording = False
-        self.thread.join()
-        self.flush()
-        self.writer.release()
-        utility.info('Recording saved to {}'.format(self.last_recording_path))
+        self.__recording = False
+        self.__thread.join()
+        self.__flush()
+        self.__writer.release()
+        utility.info('Recording saved to {}'.format(self.__last_recording_path))

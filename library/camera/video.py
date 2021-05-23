@@ -1,30 +1,28 @@
 import cv2
 import imutils
-from time import sleep
+from time import sleep, time
 from imutils.video import VideoStream, FPS
 
 from library import utility
 
+TIMEOUT = 5
 DEFAULT_SRC = 0
 DEFAULT_VS_ARGS = (DEFAULT_SRC)
-
 class Video:
     def __init__(
         self,
         config,
         frame_handler=None,
         on_exit=None,
-        vs_args=DEFAULT_VS_ARGS,
-        ):
+    ):
         """
-        Instantiate an object capable of managing a CV2 RTSP Video Stream.
+        Instantiate an object capable of managing a CV2 Video Source.
 
         config is a required dict and must contain the following keys:
-            show_video: bool
-            frame_width: int
-            rtsp_url: string
-
-        vs_args is an optional tuple or dict that will be spread into the VideoStream constructor
+            display: bool
+            width: int
+            src: string
+            name: string
 
         frame_handler is an optional function and is passed the following:
             frame: The current CV2 frame to be processed
@@ -36,37 +34,24 @@ class Video:
 
         on_exit is an optional function that will be called when the video loop is closed
         """
-        self.name = 'VideoStream'
         self.on_exit = on_exit
-        self.frame_width = None
-        self.show_video = False
+
+        utility.set_properties(config, self)
 
         self.__fps = None
         self.__looping = False
         self.__pass_stop = False
+        self.__last_frame_at = time()
         self.__verify_frame_handler(frame_handler)
 
-        use_kwargs = type(vs_args).__name__ == 'dict'
-        self.__vs = VideoStream(**vs_args) if use_kwargs else VideoStream(*vs_args)
+        try:
+            self.src = int(self.src)
+        except Exception as e:
+            pass
 
-        self._verify_config(config)
-
-    def _verify_config(self, config):
-        """
-        Helper function to verify that config values are of the correct type and then set them on the instance.
-        """
-        
-        # these are the types expected by Video
-        expected_types = {
-            'show_video': bool, 
-            'frame_width': int, 
-        }
-
-        utility.process_expected_types(
-            source=config,
-            expected_types=expected_types,
-            destination=self
-        )    
+        kwargs = {'usePiCamera': True} if self.src == 'usePiCamera' else {'src': self.src}
+        print(kwargs)
+        self.__vs = VideoStream(**kwargs)
 
     def __verify_frame_handler(self, frame_handler):
         if frame_handler is not None:
@@ -93,18 +78,23 @@ class Video:
         while self.__looping:
             frame = self.__vs.read()
             if frame is None:
-                continue
+                
+                if time() - self.__last_frame_at > TIMEOUT:
+                    raise Exception('No frames for {} seconds. Likely no video feed.'.format(TIMEOUT))
 
-            if self.frame_width:
-                frame = imutils.resize(frame, width=self.frame_width)
+                continue
+                
+            self.__last_frame_at = time()
+
+            if self.width:
+                frame = imutils.resize(frame, width=self.width)
 
             if self.frame_handler:
                 self.__call_frame_handler(frame)
 
             self.__fps.update()
-            print('SHOW_VIDEO: {}'.format(self.show_video))
 
-            if self.show_video:
+            if self.display:
                 cv2.imshow(self.name, frame)
 
                 key = cv2.waitKey(1) & 0xFF
@@ -112,10 +102,6 @@ class Video:
                 if key == ord('q'):
                     self.stop()
                     break
-
-    def set_name(self, name):
-        self.name = name
-        return self
 
     def start(self):
         """
@@ -128,8 +114,6 @@ class Video:
         self.__fps = FPS().start()
 
         self.__run_loop()
-
-        return self
 
     def stop(self):
         """

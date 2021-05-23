@@ -2,33 +2,49 @@ import os
 import cv2
 import numpy as np
 
-from library import constants
-from library.detectors.detector import Detector
+from library import constants, utility
+from library.detectors.base_detector import BaseDetector
 
 MOBILENET_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
-class MobileNetDetector(Detector):
+
+class MobileNetDetector(BaseDetector):
     def __init__(self, config):
-        self._set_all_classes()
-        self._read_net()
+        self.model_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
+        self.prototxt_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.prototxt')
+        
+        self.__set_all_classes()
+        self.__read_net()
         
         super().__init__(config)
 
-    def _set_all_classes(self):
+    def __set_all_classes(self):
         self.set_all_classes(MOBILENET_CLASSES)
 
-    def _read_net(self):
-        model_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
-        prototxt_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.prototxt')
-        self.net = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
+    def __download_model_files(self):
+        # https://github.com/chuanqi305/MobileNet-SSD
+        model_url = 'https://drive.google.com/open?id=0B3gersZ2cHIxZi13UWF0OXBsZzA'
+        prototxt_url = 'https://drive.google.com/open?id=0B3gersZ2cHIxWGEzbG5nSXpNQzA'
+        # we should parallelize this
+        utility.download_file(model_url, self.model_path)
+        utility.download_file(prototxt_url, self.prototxt_path)
 
-    def _get_raw_detections(self, frame):
+    def __read_net(self):
+        if not (os.path.exists(self.model_path) and os.path.exists(self.prototxt_path)):
+            self.__download_model_files()
+
+        self.net = cv2.dnn.readNetFromCaffe(
+            self.prototxt_path,
+            self.model_path
+        )
+
+    def __get_raw_detections(self, frame):
         blob = cv2.dnn.blobFromImage(frame, size=(300, 300), ddepth=cv2.CV_8U)
         self.net.setInput(blob, scalefactor=1.0/127.5, mean=[127.5, 127.5, 127.5])
         raw_detections = self.net.forward()
 
         return raw_detections
 
-    def _normalize_detections(self, raw_detections, frame):
+    def __normalize_detections(self, raw_detections, frame):
         normalized_detections = []
         (H, W) = frame.shape[:2]
 
@@ -43,7 +59,8 @@ class MobileNetDetector(Detector):
         return normalized_detections
 
     def _get_normalized_detections(self, frame):
-        raw_detections = self._get_raw_detections(frame)
-        normalized_detections = self._normalize_detections(raw_detections, frame)
+        # must be provided to the BaseDetector
+        raw_detections = self.__get_raw_detections(frame)
+        normalized_detections = self.__normalize_detections(raw_detections, frame)
 
         return normalized_detections

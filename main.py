@@ -1,3 +1,6 @@
+from library.camera.writer import Writer
+from library.notifier.pushover import Pushover
+from library.cli import CLI
 from library import utility
 from library.camera import Video
 from library.monitor import Monitor
@@ -7,18 +10,33 @@ video = None
 
 def main():
     global video
-    args = utility.get_args()
-    config = utility.get_config(args.get('config'))
-    utility.info('Loaded configuration:')
-    utility.print_config(config)
+    cli = CLI().process()
+    cli.print_config()
 
     utility.info('Loading detector...')
-    detector = get_detector(config)
+    detector = get_detector(cli.get_detector_config())
 
-    monitor = Monitor(config)
+    pushover = None
+    pushover_config = cli.get_pushover_config()
+    if pushover_config:
+        pushover = Pushover(pushover_config)
+
+    writer = None
+    writer_config = cli.get_writer_config()
+    if writer_config:
+        writer = Writer(writer_config)
+
+    monitor = Monitor(
+        config=cli.get_monitor_config(),
+        writer=writer,
+        pushover=pushover
+    )
 
     def handle_video_frame(frame):
-        detector.process_frame(frame, on_detections=monitor.handle_detections)
+        detector.process_frame(
+            frame,
+            on_detections=monitor.handle_detections
+        )
 
     def cleanup():
         if monitor:
@@ -27,13 +45,11 @@ def main():
         if detector:
             detector.terminate_thread()
 
-    vs_args = (config.get('rtsp_url'),)
     video = Video(
-        config=config,
+        config=cli.get_video_config(),
         frame_handler=handle_video_frame,
         on_exit=cleanup,
-        vs_args=vs_args
-    ).set_name('Wyze Cam')
+    )
 
     utility.info('Starting video stream...')
     video.start()

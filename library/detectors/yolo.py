@@ -2,32 +2,57 @@ import os
 import cv2
 import numpy as np
 
-from library import constants
-from library.detectors.detector import Detector
+from library import constants, utility
+from library.detectors.base_detector import BaseDetector
 
 # constants
-SCALE = 0.00392
-CONF_THRESH = 0.5
+SCALE = 1/255
 NMS_THRESH = 0.4
+CONF_THRESH = 0.5
 
-class YoloDetector(Detector):
+# @article{yolov3,
+#   title={YOLOv3: An Incremental Improvement},
+#   author={Redmon, Joseph and Farhadi, Ali},
+#   journal = {arXiv},
+#   year={2018}
+# }
+
+class YoloDetector(BaseDetector):
     def __init__(self, config):
+        self.__classes_path = os.path.join(constants.yolo_path, 'coco.names')
+        self.__cfg_path = os.path.join(constants.yolo_path, 'yolov3.cfg')
+        self.__weights_path = os.path.join(constants.yolo_path, 'yolov3.cfg')
+
         self._set_all_classes()
         self._read_net()
 
         super().__init__(config)
 
+    def __download_model_files(self):
+        classes_url = 'https://github.com/pjreddie/darknet/blob/master/data/coco.names'
+        weights_url = 'https://pjreddie.com/media/files/yolov3.weights'
+        cfg_url = 'https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg'
+
+        utility.download_file(classes_url, self.__classes_path)
+        utility.download_file(weights_url, self.__weights_path)
+        utility.download_file(cfg_url, self.__cfg_path)
+
     def _set_all_classes(self):
-        classesPath = os.path.join(constants.yolo_path, 'yolov3.txt')
+        if not os.path.exists(self.__classes_path):
+            self.__download_model_files()
+
         # read the class names from yolov3.txt
-        with open(classesPath, 'r') as f:
+        with open(self.classesPath, 'r') as f:
+            # self.set_all_classes is inherited
             self.set_all_classes([line.strip() for line in f.readlines()])
 
     def _read_net(self):
         # read the pretrained model and configs
-        weights = os.path.join(constants.yolo_path, 'yolov3.weights')
-        config = os.path.join(constants.yolo_path, 'yolov3.cfg')
-        self.net = cv2.dnn.readNet(weights, config)
+        self.net = cv2.dnn.readNetFromDarknet(self.__cfg_path, self.__weights_path)
+
+        self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
 
     def _get_raw_detections(self, frame):
         # create the input blob
@@ -87,6 +112,7 @@ class YoloDetector(Detector):
         return normalized_detections
 
     def _get_normalized_detections(self, frame):
+        # must be provided to the BaseDetector
         raw_detections = self._get_raw_detections(frame)
         normalized_detections = self._normalize_detections(raw_detections, frame)
 

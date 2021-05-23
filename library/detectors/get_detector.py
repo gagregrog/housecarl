@@ -2,11 +2,11 @@ from library.detectors.yolo import YoloDetector
 from library.detectors.mobilenet import MobileNetDetector
 
 def get_detector(config):
-    detector = config['detector']
+    model = config['model']
 
-    if detector == 'mobilenet':
+    if model == 'mobilenet':
         return MobileNetDetector(config)
-    elif detector == 'yolo':
+    elif model == 'yolo':
         return YoloDetector(config)
 
-    raise Exception('model must be one of ["mobilenet", "yolo"].')
+    raise Exception('config.detector.model must be one of ["mobilenet", "yolo"].')

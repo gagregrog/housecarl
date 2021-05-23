@@ -1,21 +1,35 @@
 {
-  "rtsp_url": "",
-  "mock_pushover": false,
-  "pushover_user_key": "",
-  "pushover_app_token": "",
-  "min_confidence": 0.5,
-  "show_video": true,
-  "show_detections": true,
-  "threaded": false,
-  "frame_width": 1400,
-  "detector": "mobilenet",
-  "detection_lapse_timeout": 5,
-  "min_detection_ratio": 0.5,
-  "min_detection_frames": 40,
-  "max_detection_duration": 60,
-  "post_detection_debounce": 30,
-  "classes": ["dog", "person"],
-  "out_dir": "",
-  "min_disk_space": 10,
-  "debug": false
+  "writer": {
+    "fps": 15,
+    "timeout": 1,
+    "out_dir": "",
+    "fourcc": "MJPG",
+    "buffer_size": 64,
+    "min_disk_space": 10
+  },
+  "video": {
+    "src": "",
+    "width": 1400,
+    "display": true,
+    "name": "Detections"
+  },
+  "pushover": {
+    "mock": false,
+    "user_key": "",
+    "api_token": ""
+  },
+  "detector": {
+    "threaded": false,
+    "model": "mobilenet",
+    "min_confidence": 0.5,
+    "show_detections": true,
+    "classes": ["dog", "person"]
+  },
+  "monitor": {
+    "min_detection_ratio": 0.5,
+    "min_detection_frames": 40,
+    "detection_lapse_timeout": 5,
+    "max_detection_duration": 60,
+    "post_detection_debounce": 30
+  }
 }
