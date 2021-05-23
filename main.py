@@ -1,3 +1,5 @@
+from time import sleep
+
 from library import utility
 from library.cli import CLI
 from library.monitor import Monitor
@@ -11,6 +13,10 @@ def main():
     global video
     cli = CLI().process()
     cli.print_config()
+    pause = 3
+    utility.info('Starting in {} seconds'.format(pause))
+    # brief pause to read config
+    sleep(pause)
 
     utility.info('Loading detector...')
     detector = Detector(cli.get_detector_config())
