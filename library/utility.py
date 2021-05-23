@@ -50,6 +50,9 @@ def get_free_space():
 
     return bytes_to_gb(free)
 
+def copy_file(src_path, dest_path):
+    shutil.copyfile(src_path, dest_path)
+
 def get_typename(obj):
     return type(obj).__name__
 
