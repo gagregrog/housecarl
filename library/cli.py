@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+from time import sleep
 
 from library import utility
 from library.constants import config_path, default_config_path
@@ -68,6 +69,8 @@ class CLI:
         self.__user_config = self.__default_config
         utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'pre': '\n\t'})
         utility.copy_file(default_config_path, self.__user_config_path)
+        # pause so you can read the copy warning
+        sleep(3)
 
 
     def __merge_configs(self):
@@ -83,8 +86,11 @@ class CLI:
         for config_group_name, config_group_defaults in self.__default_config.items():
             configuration_found = config_group_name in self.__user_config
 
+            is_writer = config_group_name == 'writer'
+            is_pushover = config_group_name == 'pushover'
+
             # respect cli arg overrides
-            if (config_group_name == 'pushover' and no_pushover) or (config_group_name == 'writer' and no_write):
+            if (is_pushover and (no_pushover or not configuration_found)) or (is_writer and (no_write or not configuration_found)):
                 continue
 
             # if no user supplied config for this group, use group defaults
@@ -115,10 +121,14 @@ class CLI:
                 default_value_type = utility.get_typename(default_value)
                 invalid_value_type = user_key_found and user_value_type != default_value_type
 
-                # allow string or int for src
+                # allow string or int for video.src
                 if key == 'src' and invalid_value_type:
                     if user_value_type == 'str' or user_value_type == 'int':
                         invalid_value_type = False
+                elif key == 'mock' and not user_key_found:
+                    # if they didn't pass a mock, don't override
+                    # aka don't provide True if no key present
+                    continue
 
                 if invalid_value_type:
                     utility.error('Invalid type passed for key: {}. Expected {} but got {}.'
@@ -174,7 +184,7 @@ class CLI:
 
         for group_name, group_values in self.__config.items():
             print('\n\tConfig group: {}'.format(group_name))
-            [print('\t\t{}: {}'.format(k, v if 'token' not in k else '<*MASKED*>')) for k, v in group_values.items()]
+            [print('\t\t{}: {}'.format(k, '<*MASKED*>' if 'token' in k and v else v)) for k, v in group_values.items()]
 
     def get_detector_config(self):
         return self.__get_config_group('detector')
