@@ -1,6 +1,6 @@
-from os.path import join, dirname
+from os.path import join, dirname, abspath
 
-root_path = join(dirname(__file__), '..')
+root_path = abspath(join(dirname(__file__), '..'))
 models_path = join(root_path, 'models')
 recordings_path = join(root_path, 'recordings')
 mobilenet_path = join(models_path, 'mobilenet')
