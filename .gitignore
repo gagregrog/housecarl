@@ -120,7 +120,7 @@ dmypy.json
 
 # End of https://www.gitignore.io/api/python,visualstudiocode
 
-config.json
 .DS_STORE
 .vscode
 models
+*.json
