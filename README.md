@@ -1,26 +1,20 @@
-# wyze-rtsp-object-detection
+# housecarl
 
 ## Overview
 
-With this application you can perform the following:
+What can [Carl](https://en.wikipedia.org/wiki/Housecarl) do for you?
 
-  - Process video from these sources: 
+  - Carl can process video from these sources: 
       - Built-in Webcam
       - USB Camera
       - Raspberry Pi Camera
       - Wyze RTSP Stream
       - Other streaming source
-  - Event monitoring based on object detection via:
+  - Carl will monitor your video feed and keep a lookout for you. He can perform object detection using the following models:
       - MobileNet_SSD
       - YoloV3
-  - Push notifications sent to your device via [Pushover](https://pushover.net/)
-  - Local event recording
-  - Google Coral TPU Acceleration
-      - ***TODO***
-  - Background processing on boot
-      - ***TODO***
-  - Local event playback in browser
-      - ***TODO***
+  - Carl has a keen eye. If he notices anything out of the ordinary, he'll send you a push notifications via [Pushover](https://pushover.net/).
+  - Carl has a good memory. If you want, he can record interesting events for you.
 
 ## How do I use it?
 
@@ -119,7 +113,7 @@ Some configuration options can be overridden by passing CLI options.
 
 ### Installation
 
-1. Clone the repository with `git clone https://github.com/RobertMcReed/wyze-rtsp-object-detection.git`
+1. Clone the repository with `git clone https://github.com/RobertMcReed/housecarl.git`
 2. Create and activate a virtual environment using your favorite method.
     - I prefer to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
 3. Install project requirements with `pip install -r requirements.txt`
