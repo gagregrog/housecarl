@@ -12,7 +12,7 @@ class Video:
     def __init__(
         self,
         config,
-        frame_handler=None,
+        on_frame=None,
         on_exit=None,
     ):
         """
@@ -24,13 +24,13 @@ class Video:
             src: string
             name: string
 
-        frame_handler is an optional function and is passed the following:
+        on_frame is an optional function and is passed the following:
             frame: The current CV2 frame to be processed
             stop: A function that will terminate the loop
 
-            If frame_handler has a function signature that accepts one argument, frame is passed.
-            If frame_handler has a function signature that accepts two arguments, frame and then stop is passed.
-            If frame_handler has a function signature that accepts any other number of arguments, an exception is raised.
+            If on_frame has a function signature that accepts one argument, frame is passed.
+            If on_frame has a function signature that accepts two arguments, frame and then stop is passed.
+            If on_frame has a function signature that accepts any other number of arguments, an exception is raised.
 
         on_exit is an optional function that will be called when the video loop is closed
         """
@@ -42,7 +42,7 @@ class Video:
         self.__looping = False
         self.__pass_stop = False
         self.__last_frame_at = time()
-        self.__verify_frame_handler(frame_handler)
+        self.__verify_frame_handler(on_frame)
 
         try:
             self.src = int(self.src)

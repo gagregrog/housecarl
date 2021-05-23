@@ -44,6 +44,8 @@ class CLI:
         ap.add_argument('--no-write', action="store_true", help="Don't record video.")
         ap.add_argument('--no-video', action="store_true", help="Suppress video.")
         ap.add_argument('--show-video', action="store_true", help="Show video.")
+        ap.add_argument('--no-detect', action="store_true", help="Don't perform inference")
+        ap.add_argument('--no-monitor', action="store_true", help="No push or write. No post-processing of detections.")
         ap.add_argument('--threaded', action="store_true", help="Run the detections in a separate thread.")
         ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera"')
         ap.add_argument('--model', default=None, help='Model to use. Either "yolo" or "mobilenet".')
@@ -81,18 +83,30 @@ class CLI:
         """
         self.__config = {}
 
-        no_write = self.__args.get('no_write')
-        no_pushover = self.__args.get('no_push')
+        no_detect = self.__args.get('no_detect')
+        no_monitor = self.__args.get('no_monitor')
+        no_write = self.__args.get('no_write')  or no_monitor
+        no_pushover = self.__args.get('no_push') or no_monitor
 
         # iterate over all of the config groups and merge user config and args with defaults
         for config_group_name, config_group_defaults in self.__default_config.items():
             configuration_found = config_group_name in self.__user_config
 
+            is_video = config_group_name == 'video'
             is_writer = config_group_name == 'writer'
+            is_monitor = config_group_name == 'monitor'
             is_pushover = config_group_name == 'pushover'
 
+            # skip if no config provided or if skip requested
+            skip_monitor = is_monitor and no_monitor
+            skip_write = is_writer and (no_write or not configuration_found)
+            skip_push = is_pushover and (no_pushover or not configuration_found)
+
+            # skip everything but video if we're not detecting
+            skip_detect = no_detect and not is_video
+
             # respect cli arg overrides
-            if (is_pushover and (no_pushover or not configuration_found)) or (is_writer and (no_write or not configuration_found)):
+            if skip_push or skip_write or skip_detect or skip_monitor:
                 continue
 
             # if no user supplied config for this group, use group defaults
