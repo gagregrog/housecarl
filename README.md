@@ -25,7 +25,7 @@ Once all dependencies have been installed, you can run carl from a terminal prom
 If you've installed by cloning the git repo, run: 
 
 ```bash
-python housecarl/carl.py
+python main.py
 ```
 
 If you've installed as a package via `pipx`, simply run:
