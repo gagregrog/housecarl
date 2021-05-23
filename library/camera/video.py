@@ -50,7 +50,6 @@ class Video:
             pass
 
         kwargs = {'usePiCamera': True} if self.src == 'usePiCamera' else {'src': self.src}
-        print(kwargs)
         self.__vs = VideoStream(**kwargs)
 
     def __verify_frame_handler(self, frame_handler):
@@ -124,10 +123,10 @@ class Video:
 
         self.__looping = False
         self.__fps.stop()
-        print('Elapsed time: {:.2f}'.format(self.__fps.elapsed()))
+        utility.info('Elapsed time: {:.2f}'.format(self.__fps.elapsed()))
         sleep(0.5)
         
-        print('Approx FPS: {:.2f}'.format(self.__fps.fps()))
+        utility.info('Approx FPS: {:.2f}\n'.format(self.__fps.fps()))
         cv2.waitKey(1)
         cv2.destroyAllWindows()
         self.__vs.stop()
