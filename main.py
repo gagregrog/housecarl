@@ -18,7 +18,7 @@ def main():
     # brief pause to read config
     sleep(pause)
 
-    utility.info('Loading detector...')
+    utility.info('Loading detector...\n')
     detector = Detector(cli.get_detector_config())
 
     pushover = None
