@@ -7,10 +7,7 @@ from library.notifier import Pushover
 from library.detectors import Detector
 from library.camera import Video, Writer
 
-video = None
-
-def main():
-    global video
+def __main(video):
     cli = CLI().process()
     cli.print_config()
     pause = 3
@@ -72,9 +69,11 @@ def main():
     utility.info('Starting video stream...')
     video.start()
 
-if __name__ == "__main__":
+def carl():
+    video = None
+
     try:
-        main()
+        __main(video)
     except (KeyboardInterrupt, Exception) as exception:
         if video:
             video.stop()
@@ -88,3 +87,6 @@ if __name__ == "__main__":
         if not is_interrupt:
             # raise any other types of exceptions
             raise exception
+
+if __name__ == "__main__":
+    carl()
