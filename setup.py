@@ -13,7 +13,7 @@ with io.open(os.path.join(CURRENT_DIR, "requirements.txt"), "r", encoding="utf-8
 setup(
     name="housecarl",
     version="0.0.1",
-    packages=find_packages(include=["housecarl*"]),
+    packages=find_packages(include=["housecarl"]),
     install_requires=DEPENDENCIES,
     author="Robert Reed",
     author_email="robert.mc.reed@gmail.com",
