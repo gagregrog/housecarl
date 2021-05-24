@@ -126,3 +126,4 @@ models*
 *.json
 recordings
 !config.default.json
+firmware

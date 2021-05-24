@@ -157,7 +157,7 @@ If you plan on changing any features, you'll likely want to follow a traditional
 ### Enable Wyze RTSP
 
 1. [Flash the appropriate RTSP firmware](https://support.wyzecam.com/hc/en-us/articles/360031490871-How-to-flash-firmware-manually) to your camera
-    - You can use the [firmware bundled with this app](/firmware), or [download it directly from Wyze](https://support.wyzecam.com/hc/en-us/articles/360024852172).
+    - You can use the [download the firmware directly from Wyze](https://support.wyzecam.com/hc/en-us/articles/360024852172).
 2. Once the firmware is flashed to your device, [enable the RTSP stream via the Wyze mobile app](https://support.wyzecam.com/hc/en-us/articles/360026245231-Wyze-Cam-RTSP?flash_digest=630b29ed5ddba4551c15029f9d8006765ae1ad0c#).
 3. Once enabled in the app, you can generate a URL for the stream. Use this URL as the value of `config.video.src` or pass via the CLI as `--src=<RTSP_URL>`.
      - The stream url should look like `rtsp://{user}:{pw}@{stream_ip}/live`.
