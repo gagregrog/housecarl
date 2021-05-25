@@ -119,6 +119,12 @@ Some configuration options can be overridden by passing CLI options.
 
 ## Setup
 
+### RaspberryPi
+
+If you plan to run Carl on a Raspberry Pi, I would recommend using a Raspberry Pi 4 with at least 4GB of RAM. Before continuing with the regular installation, please follow the instructions for installing the additional build dependencies required for OpenCV. 
+
+The instructions are in [README.RPi.md](README.RPi.md).
+
 ### Installation
 
 Depending on your intentions, you can either [install via pipx](#pipx-install) or  do a traditional [git install](#git-install).
