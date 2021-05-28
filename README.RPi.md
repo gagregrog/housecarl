@@ -65,4 +65,4 @@ To be fair, I don't know that all of this is strictly required, but OpenCV did n
 
 ## Installing Carl
 
-At this point, you should be able to return to the main set of installation instructions and install the app. If you only plan on running the app, I would recommend to install the CLI using pipx. If you want to modify anything, you'll be better off cloning the repo and running the app directly. Either way, it's time for you to return to the main [README.md](README.md#installation).
+At this point, you should be able to return to the main set of installation instructions and install the app. If you only plan on running the app, I would recommend to install the CLI using pipx. If you want to modify anything, you'll be better off cloning the repo and running the app directly. If you go this route, don't forget to install the additional raspberry pi pip packages. Either way, it's time for you to return to the main [README.md](README.md#installation).

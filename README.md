@@ -157,7 +157,8 @@ If you plan on changing any features, you'll likely want to follow a traditional
 2. Create and activate a virtual environment using your favorite method.
     - I prefer to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
 3. Install project requirements with `pip install -r requirements.txt`
-    - This will likely take a while if you are building on a Raspberry Pi
+    - This will take a while if you are building on a Raspberry Pi
+    - If you *are* installing this on a pi and plan on using the pi camera, you must also run `pip install -r pi.requirements.txt`
 4. You're now ready to start processing video feeds. Get familiar with [the CLI](#cli) and [configuration options](#configuration), or keep reading to see additional setup.
 
 ### Enable Wyze RTSP
