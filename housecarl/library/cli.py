@@ -71,8 +71,13 @@ class CLI:
 
     def __init_config(self):
         self.__user_config = self.__default_config
-        utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'pre': '\n\t'})
-        utility.copy_file(default_config_path, self.__user_config_path)
+
+        if self.__user_config_path != config_path:
+            utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'emphasis': True})
+            utility.copy_file(default_config_path, self.__user_config_path)
+        else:
+            utility.warn('{} not found. Using defaults.\n'.format(self.__user_config_path), {'emphasis': True})
+
         # pause so you can read the copy warning
         sleep(3)
 
