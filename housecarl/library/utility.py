@@ -11,13 +11,14 @@ def _log(log_type: str, *args) -> None:
 
     last_arg = args[len(args) - 1]
     prefix = '' if 'pre' not in last_arg else last_arg.get('pre')
+    prefix = prefix if 'emphasis' not in last_arg else '\n\t'
     data = args if not prefix else args[:-1]
 
     print('\n{}[{}]'.format(prefix, log_type.upper()), *data)
 
 info = lambda *args: _log('info', *args)
 warn = lambda *args: _log('warn', *args)
-error = lambda *args: _log('error', *args, {'pre': '\n\t'})
+error = lambda *args: _log('error', *args, {'emphasis': True})
 
 def num_args(func):
     spec = inspect.getfullargspec(func)
