@@ -115,7 +115,7 @@ Some configuration options can be overridden by passing CLI options.
   - `--no-monitor`: Don't send push notifications or record events. Detections will still be drawn to video.
   - `--threaded`: Perform detections in a separate thread. This will speed up video but result in stale detections drawn to frames.
   - `--src`: Video Source. Number or stream url or `usePiCamera`.
-  - `--model`: Model to use. Either `yolo` or `mobilenet`.
+  - `--model`: Model to use. Either `yolo`, `mobilenet`, or `coral`.
 
 
 ## Setup
@@ -153,11 +153,6 @@ If you want to use the app and won't be developing any new features, consider in
       ```bash
       pipx install https://github.com/RobertMcReed/housecarl/archive/some_release.zip
       ```
-    - If you will be using the Google Coral USB accelerator, make sure to specify Python 3.8 when installing Carl.
-        - For example: 
-          ```bash
-          pipx install --python 3.8 git+https://github.com/RobertMcReed/housecarl.git
-          ```
 
 #### pipx install with coral
 
@@ -199,6 +194,8 @@ Or if you have a different version of python installed with `homebrew`, maybe tr
 ```bash
 pipx install --python /usr/local/Cellar/python@3.8/3.8.10/bin/python3 git+https://github.com/RobertMcReed/housecarl.git
 ```
+
+Once Carl is installed, make sure you follow the additional setup requirements for the Coral, detailed in [README.Coral.md](/README.Coral.md).
 
 #### Git Install
 
@@ -245,8 +242,10 @@ Once a suitable version of python has been installed, continue with the regular 
 
 ### Enable Wyze RTSP
 
+The original intention behind Carl was to use him as a monitor for a Wyze cam. His horizons have broadened since then, but this is still a nice option. In order to capture your Wyze cam stream, you must flash the RTSP firmware to the device and enable it in the Wyze App.
+
 1. [Flash the appropriate RTSP firmware](https://support.wyzecam.com/hc/en-us/articles/360031490871-How-to-flash-firmware-manually) to your camera
-    - You can use the [download the firmware directly from Wyze](https://support.wyzecam.com/hc/en-us/articles/360024852172).
+    - You can [download the firmware directly from Wyze](https://support.wyzecam.com/hc/en-us/articles/360024852172).
 2. Once the firmware is flashed to your device, [enable the RTSP stream via the Wyze mobile app](https://support.wyzecam.com/hc/en-us/articles/360026245231-Wyze-Cam-RTSP?flash_digest=630b29ed5ddba4551c15029f9d8006765ae1ad0c#).
 3. Once enabled in the app, you can generate a URL for the stream. Use this URL as the value of `config.video.src` or pass via the CLI as `--src=<RTSP_URL>`.
      - The stream url should look like `rtsp://{user}:{pw}@{stream_ip}/live`.
