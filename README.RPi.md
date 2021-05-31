@@ -28,14 +28,17 @@ Before continuing, you'll likely want to set up something to manage your virtual
 
     ```
 
-5. No we're ready to install python with `pyenv`. Make sure to install with `--enabled-shared`. This will take longer to build, but will give you or more complete set of packages. To install python 3.9.5, for example:
+5. Now we're ready to install python with `pyenv`. Make sure to install with `--enabled-shared`. This will take longer to build, but will give you or more complete set of packages. 
+**NOTE:** If you will be using a Google Coral USB Accelerator, you must install python version 3.5-3.8.
+
+To install python 3.8.9, for example:
 
     ```bash
-    env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.5
+    env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.9
     ```
 
-6. Set your install as the global install: `pyenv global 3.9.5`
-7. Upgrade pip: `pip install --upgrade pip`
+6. Set your install as the global install: `pyenv global 3.8.9`
+7. Upgrade pip: `python -m pip install --upgrade pip`
 8. Install pipx: `python -m pip install --user pipx`
 9. Set path: `python -m pipx ensurepath`
     - This will likely tell you that the path is already set (since we set it in our `~/.bashrc` earlier).
@@ -44,7 +47,7 @@ Before continuing, you'll likely want to set up something to manage your virtual
 
 Before you can install Carl, we need to ensure that OpenCV will be able to install properly.
 
-To do this, I recommend you follow Adrian Rosenbock's [tutorial for installing OpenCV 4 on a Raspberry Pi](https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/). Basically, you will be installing everything that has ever existed. Refer to the article for the most up to date information, but for your convenience this amounts to the following:
+To do this, I recommend you follow Adrian Rosenbock's [tutorial for installing OpenCV 4 on a Raspberry Pi](https://www.pyimagesearch.com/2019/09/16/install-opencv-4-on-raspberry-pi-4-and-raspbian-buster/). Basically, you will be installing everything that has ever existed. Refer to the article for the most up to date information, but for your convenience, at the time of writing this amounts to the following:
 
 ```bash
 sudo apt-get update && sudo apt-get upgrade -y; \
@@ -65,4 +68,12 @@ To be fair, I don't know that all of this is strictly required, but OpenCV did n
 
 ## Installing Carl
 
-At this point, you should be able to return to the main set of installation instructions and install the app. If you only plan on running the app, I would recommend to install the CLI using pipx. If you want to modify anything, you'll be better off cloning the repo and running the app directly. If you go this route, don't forget to install the additional raspberry pi pip packages. Either way, it's time for you to return to the main [README.md](README.md#installation).
+At this point, you should be able to return to the main set of installation instructions and install the app.
+
+If you only plan on running the app, I would recommend to install the CLI using pipx.
+
+If you want to modify anything, you'll be better off cloning the repo and running the app directly. If you follow the `git install`, don't forget to install the additional raspberry pi pip packages.
+
+If you will be using a Google Coral USB Accelerator, you will need to follow additional setup instructions after installing Carl. You can find this information in [README.Coral.md](/README.Coral.md).
+
+Whatever your path, it's time for you to return to the main [README.md](README.md#installation).
