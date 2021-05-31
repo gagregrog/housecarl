@@ -197,6 +197,8 @@ pipx install --python /usr/local/Cellar/python@3.8/3.8.10/bin/python3 git+https:
 
 Once Carl is installed, make sure you follow the additional setup requirements for the Coral, detailed in [README.Coral.md](/README.Coral.md).
 
+If you would like to `uninstall` Carl, simply run `pipx uninstall housecarl`.
+
 #### Git Install
 
 If you plan on changing any features, you'll likely want to follow a traditional git install.
