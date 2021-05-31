@@ -13,6 +13,7 @@ What can [Carl](https://en.wikipedia.org/wiki/Housecarl) do for you?
   - Carl will monitor your video feed and keep a lookout for you. He can perform object detection using the following models:
       - MobileNet_SSD
       - YoloV3
+      - MobileNetV2 on Google Coral Edge TPU
   - Carl has a keen eye. If he notices anything out of the ordinary, he'll send you a push notifications via [Pushover](https://pushover.net/).
   - Carl has a good memory. If you want, he can record interesting events for you.
 
@@ -66,7 +67,7 @@ The behavior of each option is explained below:
 ##### detector
 
   - `threaded`: `bool` - Perform detections in a thread. This results in faster video feed, but results in stale detections drawn to frame.
-  - `model`: `str` - One of `mobilenet` or `yolo`. If not found, the model files will be downloaded.
+  - `model`: `str` - One of `mobilenet`, `yolo`, or `coral`. If not found, the model files will be downloaded.
   - `min_confidence`: `float: [0, 1]` - Weak detections will be filtered out.
   - `show_detections`: `bool` - Draw detections on the frame. Impacts video display, recorded events, and notification images.
   - `classes`: `List<str>` - The names of all classes you want to detect. Will be checked against the available classes for the chosen detector. Invalid values will be ignored.
@@ -129,9 +130,13 @@ The instructions are in [README.RPi.md](README.RPi.md).
 
 Depending on your intentions, you can either [install via pipx](#pipx-install) or  do a traditional [git install](#git-install).
 
+If you plan on using a Google Coral USB Accelerator, you will need to install python 3.5-3.8. See the [Python version notes](#python-version) below.
+
 #### pipx install
 
-If you want to use the app and won't be developing any new features, consider installing via [pipx](https://pipxproject.github.io). This has many benefits. For example, it will handle creating a virtual environment for you, and it will also allow you to invoke carl via his alias `carl`.
+If you want to use the app and won't be developing any new features, consider installing via [pipx](https://pipxproject.github.io). This has many benefits. For example, it will handle creating a virtual environment for you, and it will also allow you to invoke carl via his alias, `carl`.
+
+- ***NOTE:*** If you will be using a Google Coral USB Accelerator, you must follow the [these instructions instead](#pipx-install-with-coral).
 
 1. Ensure you have [`pipx` installed](https://pipxproject.github.io/pipx/installation/).
     - If you are on a mac with homebrew, you can `brew install pipx`
@@ -148,18 +153,95 @@ If you want to use the app and won't be developing any new features, consider in
       ```bash
       pipx install https://github.com/RobertMcReed/housecarl/archive/some_release.zip
       ```
+    - If you will be using the Google Coral USB accelerator, make sure to specify Python 3.8 when installing Carl.
+        - For example: 
+          ```bash
+          pipx install --python 3.8 git+https://github.com/RobertMcReed/housecarl.git
+          ```
+
+#### pipx install with coral
+
+If you want to use the Google Coral USB accelerator to speed up detections, you must install Carl into a virtual environment with python version 3.5-3.8. If you don't you won't be able to install `pycoral` completely, which is required for performing inference on the USB accelerator.
+
+If you already have `pipx` installed, check the version:
+
+```bash
+~/.local/pipx/shared/bin/python3 --version
+```
+
+If you are within version 3.5-3.8, you are ok, and you can continue with the [regular install instructions](#pipx-install).
+
+If you aren't you have a few options.
+
+1. Reinstall `pipx` [using one of the supported versions of python](https://pipxproject.github.io/pipx/installation/).
+    - One way to do this is to: 
+        - Install the appropriate version of python using `pyenv`
+        - Set that version as your global python version with `pyenv global 3.X.Y`
+        - Install pyenv with `python -m pip install --user pipx`
+2. Install a supported version of python using `pyenv` or `homebrew` (or some other means) and provide its executable to pipx:
+    - You can do this in two ways.
+        - If you want to set the version for *all* `pipx` installs, you can set the environment variable `PIPX_DEFAULT_PYTHON` in your `.bashrc` (or `.zshrc`, etc) as the path to the executable
+            - If you do this, you can proceed by following the [regular install instructions](#pipx-install).
+        - If you want to set the python version just for the Carl install, proceed as follows
+3. Install `carl` using `pipx` by providing the path to a python executable:
+```bash
+pipx install --python {PATH_TO_PYTHON_EXEC} git+https://github.com/RobertMcReed/housecarl.git
+```
+
+For example, if you used `pyenv`, you might try something like:
+
+```bash
+pipx install --python ~/.pyenv/versions/3.8.9/bin/python3.8 git+https://github.com/RobertMcReed/housecarl.git
+```
+
+Or if you have a different version of python installed with `homebrew`, maybe try something like:
+
+```bash
+pipx install --python /usr/local/Cellar/python@3.8/3.8.10/bin/python3 git+https://github.com/RobertMcReed/housecarl.git
+```
 
 #### Git Install
 
 If you plan on changing any features, you'll likely want to follow a traditional git install.
 
+If you want to use the Google Coral USB accelerator to speed up detections, you must install Carl into a virtual environment with python version 3.5-3.8. If you don't, you won't be able to install `pycoral` completely, which is required for performing inference on the USB accelerator.
+
+For help installing a specific version of python, see [python version](#python-version).
+
+To install the Carl via git:
+
 1. Clone the repository with `git clone https://github.com/RobertMcReed/housecarl.git`
 2. Create and activate a virtual environment using your favorite method.
-    - I prefer to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
+    - I prefer to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv).
 3. Install project requirements with `pip install -r requirements.txt`
     - This will take a while if you are building on a Raspberry Pi
     - If you *are* installing this on a pi and plan on using the pi camera, you must also run `pip install -r pi.requirements.txt`
 4. You're now ready to start processing video feeds. Get familiar with [the CLI](#cli) and [configuration options](#configuration), or keep reading to see additional setup.
+5. If you will be using a Google Coral USB Accelerator, see the additional setup required in [README.Coral.md](/README.Coral.md).
+
+### Python Version
+
+If you plan on using a Google Coral USB Accelerator, you will need to install python 3.5-3.8. My preferred way to do this is to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv). But you could also use [homebrew](https://brew.sh/) (if on OSX) or by other means.
+
+To install via `pyenv`, see [their documentation](https://github.com/pyenv/pyenv#installation).
+
+Make sure to install any [build dependencies](https://github.com/pyenv/pyenv/wiki#suggested-build-environment) first.
+
+When you have pyenv installed, I recommend installing a framework version of python. It will take a little longer to install, but provides a more complete installation. You can read more about this [here](https://github.com/pyenv/pyenv/wiki#how-to-build-cpython-with-framework-support-on-os-x).
+
+If you are on a Mac, you can install python as follows:
+
+```bash
+env PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.8.9
+```
+
+Otherwise run:
+
+```bash
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.9
+```
+
+Once a suitable version of python has been installed, continue with the regular install instructions following either the [pipx install](#pipx-install) or [git install](#git-install).
 
 ### Enable Wyze RTSP
 
@@ -176,11 +258,17 @@ If you plan on changing any features, you'll likely want to follow a traditional
 
 ### Enable Google Coral Edge TPU Accelerator
 
- - TODO
+In order to use a Google Coral USB Accelerator, there are additional setup requirements.
+
+To begin, make sure you have installed Carl into an environment with python version 3.5-3.8. To do this, you can either follow the setup instructions for [pipx install with coral](#pipx-install-with-coral), or [Python Version](#python-version) followed by [Git Install](#git-install).
+
+Once Carl has been installed, follow the additional instructions in [README.Coral.md](/README.Coral.md).
 
 ### Local event playback in browser
 
  - TODO
+
+
 
 ## Resources
 
@@ -209,3 +297,15 @@ If you plan on changing any features, you'll likely want to follow a traditional
 ### Others
 
 - [Pushover](https://pushover.net/)
+
+- [pyenv](https://github.com/pyenv/pyenv)
+
+- [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
+
+- [homebrew](https://brew.sh/)
+
+- [pipx](https://pypa.github.io/pipx/)
+
+- [pycoral](https://www.coral.ai/software/#pycoral-api)
+
+- [coral usb accelerator](https://coral.ai/docs/accelerator/get-started/)
