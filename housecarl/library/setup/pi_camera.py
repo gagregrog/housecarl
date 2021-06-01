@@ -18,7 +18,7 @@ def install_picamera():
     new_reqs = utility.pip_install('"picamera[array]"')
     
     utility.info('The following packages have been installed:\n')
-    [print('\t{}').format(req) for req in new_reqs]
+    [print('\t{}'.format(req)) for req in new_reqs]
 
 def setup_picamera():
     utility.info('Checking hardware compatibility...')
@@ -31,7 +31,7 @@ def setup_picamera():
 
     new_install = False
     if not is_picamera_installed():
-        print('\tpicamera not found. It will be installed now...')
+        print('\tpicamera not found. It will be installed now...\n')
         install_picamera()
 
     print('\tSuccess! picamera {} installed.\n'.format('has been' if new_install else 'is'))

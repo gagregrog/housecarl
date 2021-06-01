@@ -79,7 +79,7 @@ def install_pycoral():
     new_reqs = utility.pip_install('--extra-index-url https://google-coral.github.io/py-repo/ pycoral')
 
     utility.info('The following packages have been installed:\n')
-    [print('\t{}').format(req) for req in new_reqs]
+    [print('\t{}'.format(req)) for req in new_reqs]
 
 def download_lib_edge_tpu():
     zip_path = os.path.join(constants.root_path, 'edgetpu_runtime_20210119.zip')
@@ -124,7 +124,7 @@ def setup_coral():
 
     new_install = False
     if len(missing_dirs):
-        print('\tpycoral not found. It will be installed now...')
+        print('\tpycoral not found. It will be installed now...\n')
         install_pycoral()
 
     print('\tSuccess! pycoral {} installed.\n'.format('has been' if new_install else 'is'))
