@@ -114,6 +114,7 @@ Some configuration options can be overridden by passing CLI options.
   - `--no-detect`: Don't perform inference. This will disable everything except for `video`.
   - `--no-monitor`: Don't send push notifications or record events. Detections will still be drawn to video.
   - `--threaded`: Perform detections in a separate thread. This will speed up video but result in stale detections drawn to frames.
+  - `--setup-coral`: Let Carl walk you through the setup of the Google Coral. (Additional install required)
   - `--src`: Video Source. Number or stream url or `usePiCamera`.
   - `--model`: Model to use. Either `yolo`, `mobilenet`, or `coral`.
 
@@ -197,8 +198,6 @@ pipx install --python /usr/local/Cellar/python@3.8/3.8.10/bin/python3 git+https:
 
 Once Carl is installed, make sure you follow the additional setup requirements for the Coral, detailed in [README.Coral.md](/README.Coral.md).
 
-If you would like to `uninstall` Carl, simply run `pipx uninstall housecarl`.
-
 #### Git Install
 
 If you plan on changing any features, you'll likely want to follow a traditional git install.
@@ -214,11 +213,10 @@ To install the Carl via git:
     - I prefer to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv).
 3. Install project requirements with `pip install -r requirements.txt`
     - This will take a while if you are building on a Raspberry Pi
-    - If you *are* installing this on a pi and plan on using the pi camera, you must also run `pip install -r pi.requirements.txt`
 4. You're now ready to start processing video feeds. Get familiar with [the CLI](#cli) and [configuration options](#configuration), or keep reading to see additional setup.
 5. If you will be using a Google Coral USB Accelerator, see the additional setup required in [README.Coral.md](/README.Coral.md).
 
-### Python Version
+#### Python Version
 
 If you plan on using a Google Coral USB Accelerator, you will need to install python 3.5-3.8. My preferred way to do this is to use [pyenv](https://github.com/pyenv/pyenv) and [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv). But you could also use [homebrew](https://brew.sh/) (if on OSX) or by other means.
 
@@ -242,7 +240,15 @@ env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.9
 
 Once a suitable version of python has been installed, continue with the regular install instructions following either the [pipx install](#pipx-install) or [git install](#git-install).
 
-### Enable Wyze RTSP
+#### Enable Google Coral Edge TPU Accelerator
+
+In order to use a Google Coral USB Accelerator, there are additional setup requirements.
+
+To begin, make sure you have installed Carl into an environment with python version 3.5-3.8. To do this, you can either follow the setup instructions for [pipx install with coral](#pipx-install-with-coral), or [Python Version](#python-version) followed by [Git Install](#git-install).
+
+Once Carl has been installed, follow the additional instructions in [README.Coral.md](/README.Coral.md). If you are brave, try running `carl --setup-coral` to have Carl assist you in this.
+
+#### Enable Wyze RTSP
 
 The original intention behind Carl was to use him as a monitor for a Wyze cam. His horizons have broadened since then, but this is still a nice option. In order to capture your Wyze cam stream, you must flash the RTSP firmware to the device and enable it in the Wyze App.
 
@@ -253,17 +259,23 @@ The original intention behind Carl was to use him as a monitor for a Wyze cam. H
      - The stream url should look like `rtsp://{user}:{pw}@{stream_ip}/live`.
      - Note that `user` and `pw` are defined when enabling the stream, and are not your Wyze credentials.
 
+### Uninstall
+
+#### Uninstalling Google Coral
+
+If you installed Google Coral support, you can uninstall dependencies by running `sudo bash edgetpu_runtime/uninstall.sh` from the root of the project.
+
+#### Uninstalling Carl
+
+Uninstalling Carl is pretty easy. 
+
+If you installed Carl with `pipx`, simply run `pipx uninstall housecarl`.
+
+If you installed Carl via `git`, simply remove the folder you downloaded, and delete the virtual environment that you installed it into.
+
 ### Enable Background Processing
 
  - TODO
-
-### Enable Google Coral Edge TPU Accelerator
-
-In order to use a Google Coral USB Accelerator, there are additional setup requirements.
-
-To begin, make sure you have installed Carl into an environment with python version 3.5-3.8. To do this, you can either follow the setup instructions for [pipx install with coral](#pipx-install-with-coral), or [Python Version](#python-version) followed by [Git Install](#git-install).
-
-Once Carl has been installed, follow the additional instructions in [README.Coral.md](/README.Coral.md).
 
 ### Local event playback in browser
 

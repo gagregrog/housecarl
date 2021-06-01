@@ -6,6 +6,8 @@ Your best bet is to follow [the official getting started guide](https://coral.ai
 
 ## Installation
 
+ If you are brave, try running `carl --setup-coral` to have Carl assist you with this setup. If this does not work, try the manual steps below.
+
 ### On a Mac
 
 Follow [these instructions](https://coral.ai/docs/accelerator/get-started/#runtime-on-mac), or blindly trust the next steps.
