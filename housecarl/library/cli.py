@@ -191,6 +191,10 @@ class CLI:
 
     def process(self):
         self.__get_args()
+
+        if self.should_setup_coral():
+            return self
+            
         self.__read_configs()
         self.__merge_configs()
         self.__merge_args()
