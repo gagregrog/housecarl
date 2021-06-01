@@ -111,9 +111,9 @@ def setup_coral():
     if not lib_is_installed:
         print('\tlib_edge_tpu not found. It will be downloaded now...')
         download_lib_edge_tpu()
-        utility.info('You now need to run the Google Coral installer. After the library has been installed, run "carl --setup-coral" again to finish the setup.')
-        utility.info("When prompted, type 'n' to disable maximum operating frequency. You will need to enter your password to process this install. Type the following to run the google installer:\n")
-        print('curr=`pwd` && cd {} && sudo bash install.sh && cd "$curr"'.format(constants.edge_tpu_path))
+        utility.info('You now need to run the Google Coral installer.\n\nAfter the library has been installed, run "carl --setup-coral" again to finish the setup.\n')
+        utility.info("You will need to enter your password to process this install.\n\nType the following to run the google installer:\n")
+        print('curr=`pwd` && cd {} && echo -e "no" | sudo bash install.sh && cd "$curr"'.format(constants.edge_tpu_path))
 
         return
     else:
