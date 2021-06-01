@@ -6,9 +6,14 @@ from housecarl.library.monitor import Monitor
 from housecarl.library.notifier import Pushover
 from housecarl.library.detectors import Detector
 from housecarl.library.camera import Video, Writer
+from housecarl.library.setup.coral import setup_coral
 
 def __main(video):
     cli = CLI().process()
+
+    if cli.should_setup_coral():
+        return setup_coral()
+    
     cli.print_config()
     pause = 3
     utility.info('Starting in {} seconds'.format(pause))

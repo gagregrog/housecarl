@@ -46,6 +46,7 @@ class CLI:
         ap.add_argument('--show-video', action="store_true", help="Show video.")
         ap.add_argument('--no-detect', action="store_true", help="Don't perform inference")
         ap.add_argument('--no-monitor', action="store_true", help="No push or write. No post-processing of detections.")
+        ap.add_argument('--setup-coral', action='store_true', help='Let Carl walk you through the Google Coral setup.')
         ap.add_argument('--threaded', action="store_true", help="Run the detections in a separate thread.")
         ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera"')
         ap.add_argument('--model', default=None, help='Model to use. Either "yolo" or "mobilenet".')
@@ -223,3 +224,6 @@ class CLI:
 
     def get_video_config(self):
         return self.__get_config_group('video')
+
+    def should_setup_coral(self):
+        return self.__args.get('setup_coral')
