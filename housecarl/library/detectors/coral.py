@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 
+from housecarl.library.setup import coral
 from housecarl.library import constants, utility
 from housecarl.library.detectors.base_detector import BaseDetector
 
@@ -16,10 +17,8 @@ except Exception as e:
 
 class CoralDetector(BaseDetector):
     def __init__(self, config):
-        try:
-            import pycoral
-        except Exception as e:
-            raise Exception("pycoral not found. Make sure you've followed the instructions to install pycoral for your system.\n\n See https://github.com/RobertMcReed/housecarl/blob/main/README.Coral.md for more help.")
+        coral.verify_lib_edge_tpu_install()
+        coral.verify_pycoral_install()
 
         self.labels_path = os.path.join(constants.coral_path, 'coco_labels.txt')
         self.model_path = os.path.join(constants.coral_path, 'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
