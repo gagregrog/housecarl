@@ -4,6 +4,7 @@ from time import sleep, time
 from imutils.video import VideoStream, FPS
 
 from housecarl.library import utility
+from housecarl.library.setup import pi_camera
 
 TIMEOUT = 5
 DEFAULT_SRC = 0
@@ -49,7 +50,15 @@ class Video:
         except Exception as e:
             pass
 
-        kwargs = {'usePiCamera': True} if self.src == 'usePiCamera' else {'src': self.src}
+        usePiCamera = self.src == 'usePiCamera'
+
+        if usePiCamera:
+            kwargs = {'usePiCamera': True}
+            if not pi_camera.is_picamera_installed():
+                pi_camera.setup_picamera()
+        else:
+            {'src': self.src}
+
         self.__vs = VideoStream(**kwargs)
 
     def __verify_frame_handler(self, frame_handler):
