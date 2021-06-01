@@ -1,7 +1,9 @@
 import os
+import sys
 import shutil
 import inspect
 import requests
+import subprocess
 from pathlib import Path
 
 def _log(log_type: str, *args) -> None:
@@ -106,3 +108,25 @@ def download_large_file_from_google_drive(file_id, destination):
         response = session.get(URL, params = params, stream = True)
 
     save_response_content(response, destination)
+
+def get_reqs():
+    b_string =  subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+    string = b_string.decode()
+    reqs = [req for req in string.split('\n') if req]
+
+    return reqs
+
+def is_installed(package):
+    reqs = get_reqs()
+    names = [req.split('==')[0] for req in reqs]
+
+    return package in names
+
+def pip_install(*args):
+    clean_args = [word for words in args for word in words.split(' ')]
+    prev_reqs = get_reqs()
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *clean_args])
+    curr_reqs = get_reqs()
+    new_reqs = [req for req in curr_reqs if req not in prev_reqs]
+
+    return new_reqs
