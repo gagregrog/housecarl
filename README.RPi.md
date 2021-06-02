@@ -4,7 +4,7 @@ Before following the regular installation instructions, please follow these inst
 
 ## Installing Python and Pipx
 
-Before continuing, you'll likely want to set up something to manage your virtual environments. This isn't required, but is always a good idea. Use your preferred method.
+Before continuing, you'll likely want to set up something to manage your virtual environments. This isn't required, but is always a good idea. Use your preferred method. I will go through the `pyenv` install steps.
 
 1. Install `pyenv` via the [GitHub checkout method](https://github.com/pyenv/pyenv#basic-github-checkout)
 2. Install `pyenv-virtualenv` [as a pyenv plugin](https://github.com/pyenv/pyenv-virtualenv#installing-as-a-pyenv-plugin).
@@ -28,19 +28,20 @@ Before continuing, you'll likely want to set up something to manage your virtual
 
     ```
 
-5. Now we're ready to install python with `pyenv`. Make sure to install with `--enabled-shared`. This will take longer to build, but will give you or more complete set of packages. 
-**NOTE:** If you will be using a Google Coral USB Accelerator, you must install python version 3.5-3.8.
+5. Now we're ready to install python with `pyenv`. Make sure to install with `--enabled-shared`. This will take longer to build, but will give you or more complete set of packages.
+6. 
+**NOTE:** If you will be using a Google Coral USB Accelerator, you must install python version 3.7.
 
-To install python 3.8.9, for example:
+To install python 3.7.10, for example:
 
     ```bash
-    env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.9
+    env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.7.10
     ```
 
-6. Set your install as the global install: `pyenv global 3.8.9`
-7. Upgrade pip: `python -m pip install --upgrade pip`
-8. Install pipx: `python -m pip install --user pipx`
-9. Set path: `python -m pipx ensurepath`
+If you'd like, you can set this as your global install with `pyenv global 3.7.10`.
+
+7. Install pipx (if you want to install Carl with him): `python3 -m pip install --user pipx`
+9. Set path: `python3 -m pipx ensurepath`
     - This will likely tell you that the path is already set (since we set it in our `~/.bashrc` earlier).
 
 ## Prerequisites for OpenCV
@@ -72,8 +73,8 @@ At this point, you should be able to return to the main set of installation inst
 
 If you only plan on running the app, I would recommend to install the CLI using pipx.
 
-If you want to modify anything, you'll be better off cloning the repo and running the app directly. If you follow the `git install`, don't forget to install the additional raspberry pi pip packages.
+If you want to modify anything, you'll be better off cloning the repo and running the app directly.
 
-If you will be using a Google Coral USB Accelerator, you will need to follow additional setup instructions after installing Carl. You can find this information in [README.Coral.md](/README.Coral.md).
+If you will be using a Google Coral USB Accelerator, you will need to follow additional setup instructions after installing Carl. Remember, you must use python3.7 with the Coral on a Raspberry pi with Buster OS. You can find more information on setting up the Coral in [README.Coral.md](/README.Coral.md).
 
-Whatever your path, it's time for you to return to the main [README.md](README.md#installation).
+Go there now, or return to the main [README.md](README.md#installation).
