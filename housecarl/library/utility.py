@@ -3,6 +3,7 @@ import sys
 import shutil
 import inspect
 import requests
+import sysconfig
 import subprocess
 from pathlib import Path
 
@@ -130,3 +131,30 @@ def pip_install(*args):
     new_reqs = [req for req in curr_reqs if req not in prev_reqs]
 
     return new_reqs
+
+# https://raspberrypi.stackexchange.com/a/118473/90630
+def is_raspberry_pi():
+    try:
+        with open('/sys/firmware/devicetree/base/model', 'r') as m:
+            if 'raspberry pi' in m.read().lower():
+                return True
+    except Exception:
+        pass
+
+    return False
+
+def get_missing_pycoral_dirs():
+    all_paths = sysconfig.get_paths()
+    site_packages = all_paths["purelib"]
+    pycoral_dir = os.path.join(site_packages, "pycoral")
+    
+    subdir_names = ["adapters", "utils"]
+    subdir_paths = [os.path.join(pycoral_dir, d) for d in subdir_names]
+    paths = [pycoral_dir] + subdir_paths
+
+    missing_paths = []
+    for dir_path in paths:
+        if not os.path.exists(dir_path):
+            missing_paths.append(dir_path)
+
+    return missing_paths
