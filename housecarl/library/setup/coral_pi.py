@@ -2,7 +2,7 @@ import os
 import platform
 import subprocess
 
-from housecarl.library import utility
+from housecarl.library import constants, utility
 
 def verify_python_version():
     version = platform.python_version()
@@ -39,7 +39,7 @@ def check_lib_edge_tpu_install():
 
 def install_pycoral():
     utility.info('Installing pycoral and tflite-runtime...')
-    new_reqs = utility.pip_install('https://github.com/google-coral/pycoral/releases/download/v1.0.1/tflite_runtime-2.5.0-cp37-cp37m-linux_armv7l.whl https://github.com/google-coral/pycoral/releases/download/v1.0.1/pycoral-1.0.1-cp37-cp37m-linux_armv7l.whl')
+    new_reqs = utility.pip_install('{} {}'.format(constants.tflite_rpi_wheel, constants.pycoral_rpi_wheel))
 
     utility.info('The following packages have been installed:\n')
     [print('\t{}'.format(req)) for req in new_reqs]
