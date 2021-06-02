@@ -1,16 +1,5 @@
 from housecarl.library import utility
 
-# https://raspberrypi.stackexchange.com/a/118473/90630
-def is_raspberry_pi():
-    try:
-        with open('/sys/firmware/devicetree/base/model', 'r') as m:
-            if 'raspberry pi' in m.read().lower():
-                return True
-    except Exception:
-        pass
-
-    return False
-
 def is_picamera_installed():
     return utility.is_installed('picamera')
 
@@ -22,7 +11,7 @@ def install_picamera():
 
 def setup_picamera():
     utility.info('Checking hardware compatibility...')
-    if not is_raspberry_pi():
+    if not utility.is_raspberry_pi():
         raise Exception('Picamera is only supported on a Raspberry Pi. This does not appear to be a raspberry pi.')
     else:
         print('\tLooks like this is a Raspberry Pi!\n')
