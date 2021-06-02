@@ -57,7 +57,7 @@ class Video:
             if not pi_camera.is_picamera_installed():
                 pi_camera.setup_picamera()
         else:
-            {'src': self.src}
+            kwargs = {'src': self.src}
 
         self.__vs = VideoStream(**kwargs)
 
