@@ -17,8 +17,8 @@ except Exception as e:
 
 class CoralDetector(BaseDetector):
     def __init__(self, config):
-        # coral.verify_lib_edge_tpu_install()
-        # coral.verify_pycoral_install()
+        coral.verify_lib_edge_tpu_install()
+        coral.verify_pycoral_install()
 
         self.labels_path = os.path.join(constants.coral_path, 'coco_labels.txt')
         self.model_path = os.path.join(constants.coral_path, 'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
