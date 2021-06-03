@@ -6,7 +6,7 @@ from imutils.video import VideoStream, FPS
 from housecarl.library import utility
 from housecarl.library.setup import pi_camera
 
-TIMEOUT = 5
+TIMEOUT = 60 # TODO: Make this configurable
 DEFAULT_SRC = 0
 DEFAULT_VS_ARGS = (DEFAULT_SRC)
 class Video:
