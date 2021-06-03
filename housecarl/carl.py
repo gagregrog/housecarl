@@ -88,7 +88,7 @@ def carl():
         msg = 'Keyboard Interrupt' if is_interrupt else 'Unexpected Exception'
         print('\n\n\t{}: Shutting down gracefully\n\n'.format(msg))
  
-        is_coral = 'Failed to load delegate from libedgetpu.1.dylib' in str(exception)
+        is_coral = 'Failed to load delegate from libedgetpu' in str(exception)
 
         if is_coral:
             utility.info('Did you forget to plug in your Coral?\n\n')
