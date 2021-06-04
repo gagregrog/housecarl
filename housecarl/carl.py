@@ -26,6 +26,7 @@ def __main(video):
     detector = None
     pushover = None
     handle_frame = None
+    handle_alert = None
 
     writer_config = cli.get_writer_config()
     monitor_config = cli.get_monitor_config()
@@ -38,6 +39,7 @@ def __main(video):
 
     if pushover_config:
         pushover = Pushover(pushover_config)
+        handle_alert = lambda message: pushover.send_push_notification(message)
 
     if writer_config:
         writer = Writer(writer_config)
@@ -69,6 +71,7 @@ def __main(video):
         config=cli.get_video_config(),
         on_frame=handle_frame,
         on_exit=handle_exit,
+        on_alert=handle_alert,
     )
 
     utility.info('Starting video stream...')
@@ -87,7 +90,8 @@ def carl():
         
         msg = 'Keyboard Interrupt' if is_interrupt else 'Unexpected Exception'
         print('\n\n\t{}: Shutting down gracefully\n\n'.format(msg))
- 
+
+
         is_coral = 'Failed to load delegate from libedgetpu' in str(exception)
 
         if is_coral:

@@ -15,6 +15,7 @@ class Video:
         config,
         on_frame=None,
         on_exit=None,
+        on_alert=None
     ):
         """
         Instantiate an object capable of managing a CV2 Video Source.
@@ -34,15 +35,19 @@ class Video:
             If on_frame has a function signature that accepts any other number of arguments, an exception is raised.
 
         on_exit is an optional function that will be called when the video loop is closed
+
+        on_alert is an optional function that will be called with an alert message. Handle this however you see fit...like by sending a push notification.
         """
-        self.on_exit = on_exit
+        self.__on_exit = on_exit
+        self.__on_alert = on_alert
 
         utility.set_properties(config, self)
 
         self.__fps = None
         self.__looping = False
         self.__pass_stop = False
-        self.__last_frame_at = time()
+        self.__frame_check_at = time()
+        self.__broken_stream = False
         self.__verify_frame_handler(on_frame)
 
         try:
@@ -70,11 +75,11 @@ class Video:
 
             self.__pass_stop = num_args_wanted == 2
 
-        self.frame_handler = frame_handler
+        self.__frame_handler = frame_handler
 
     def __call_frame_handler(self, frame):
         args = (frame, self.stop) if self.__pass_stop else (frame,)
-        self.frame_handler(*args)
+        self.__frame_handler(*args)
 
     def __run_loop(self):
         """
@@ -85,19 +90,39 @@ class Video:
         
         while self.__looping:
             frame = self.__vs.read()
+
             if frame is None:
-                
-                if time() - self.__last_frame_at > TIMEOUT:
-                    raise Exception('No frames for {} seconds. Likely no video feed.'.format(TIMEOUT))
+                if time() - self.__frame_check_at > TIMEOUT:
+                    # if we just detected a broken stream
+                    if not self.__broken_stream:
+                        self.__broken_stream = True
+
+                        # only handle alert if the broken stream state is new
+                        if self.__on_alert is not None:
+                            self.__on_alert(
+                                "No frames have been detected for {} seconds. Is the video stream working?".format(TIMEOUT)
+                            )
+                    # sleep when broken stream is first detected
+                    sleep(30)
+
+                    # reset the frame check time so have a chance to get more frames
+                    self.__frame_check_at = time()
 
                 continue
                 
-            self.__last_frame_at = time()
+            self.__frame_check_at = time()
+
+            # we've seen a frame again, so reset
+            if self.__broken_stream:
+                self.__broken_stream = False
+                
+                if self.__on_alert is not None:
+                    self.__on_alert("Video stream detected again!")
 
             if self.width:
                 frame = imutils.resize(frame, width=self.width)
 
-            if self.frame_handler:
+            if self.__frame_handler:
                 self.__call_frame_handler(frame)
 
             self.__fps.update()
@@ -141,5 +166,5 @@ class Video:
         self.__vs.stop()
         cv2.waitKey(1)
         
-        if self.on_exit:
-            self.on_exit()
+        if self.__on_exit:
+            self.__on_exit()
