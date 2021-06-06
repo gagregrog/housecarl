@@ -27,8 +27,9 @@ class ThreadedVideoReader:
 
     def __init__(self, src=0, reconnect=True):
         self.__src = src
-        self.__reconnect = reconnect
         self.__looping = False
+        self.__reconnect = reconnect
+        self.__connection_thread = None
 
         # Initialize deque used to store frames read from the stream
         # maxlen=1 means we always reference the latest available frame
@@ -54,10 +55,12 @@ class ThreadedVideoReader:
 
     def __verify_video_source(self):
         """Checks if the video source is available"""
-
+        utility.info('Verifying video source...')
         cap = cv2.VideoCapture(self.__src)
 
         if not cap.isOpened():
+            utility.warn('Could not connect to video source.')
+
             return False
 
         cap.release()
@@ -66,7 +69,9 @@ class ThreadedVideoReader:
 
 
     def __load_video_source(self):
-        """Verifies video source and opens it if valid"""
+        """Verifies video source and opens it if valid"""            
+        if self.__connection_thread is not None:
+            return
 
         def load_video_in_thread():
             if self.__verify_video_source():
@@ -74,17 +79,25 @@ class ThreadedVideoReader:
                 self.__online = True
                 utility.info('Connected to stream: {}'.format(self.__src))
 
-        load_video_thread = Thread(target=load_video_in_thread, args=())
-        load_video_thread.daemon = True
-        load_video_thread.start()
+            self.__connection_thread = None
+
+        self.__connection_thread = Thread(target=load_video_in_thread, args=())
+        self.__connection_thread.daemon = True
+        self.__connection_thread.start()
+
+
+    def __connected(self):
+        return self.__capture is not None and self.__capture.isOpened()
 
 
     def __get_frame_in_thread(self):
-        """Reads frame and inserts into the dequeue"""
+        """
+        Reads frame and inserts into the dequeue
+        """
 
         while self.__looping:
             try:
-                if self.__capture.isOpened() and self.__online:
+                if self.__connected() and self.__online:
                     # Read next frame from stream
                     status, frame = self.__capture.read()
 
@@ -96,12 +109,16 @@ class ThreadedVideoReader:
                         self.__capture.release()
                         self.__online = False
                 elif self.__reconnect:
-                    # Attempt to reconnect
-                    utility.info('Attempting to reconnect:', self.__src)
-                    self.__load_video_source()
-                    self.__spin(2)
+                    # check online uncase it changed mid loop (since separate thread)
+                    if not self.__connection_thread and not self.__online:
+                        # Attempt to reconnect
+                        utility.info('Connection lost. Attempting to reconnect...')
+                        self.__load_video_source()
+
+                        # pause for a beat either way
+                        self.__spin(2)
                 else:
-                    print('BREAK')
+                    utility.info('Video closing...')
                     break
 
                 self.__spin(.001)
@@ -111,8 +128,9 @@ class ThreadedVideoReader:
         if self.__capture:
             self.__capture.release()
             self.__capture = None
-            self.__looping = False
-            self.__online = False
+        
+        self.__looping = False
+        self.__online = False
 
 
     def __spin(self, seconds):
@@ -150,8 +168,10 @@ class ThreadedVideoReader:
 
         if self.__deque and self.__online:
             # Grab latest frame
-            # note this won't remove it from the queue,
-            # but it will be overwritten the next time a new frame is available
-            frame = self.__deque[-1]
+
+            try:
+                frame = self.__deque.pop()
+            except IndexError:
+                frame = None
 
             return frame
