@@ -15,11 +15,6 @@ def __main(video):
         return setup_coral()
     
     cli.print_config()
-    pause = 3
-    utility.info('Starting in {} seconds'.format(pause))
-
-    # brief pause to read config
-    sleep(pause)
 
     writer = None
     monitor = None
