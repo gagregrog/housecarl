@@ -5,6 +5,7 @@ from imutils.video import VideoStream, FPS
 
 from housecarl.library import utility
 from housecarl.library.setup import pi_camera
+from housecarl.library.camera.read_video import ThreadedVideoReader
 
 TIMEOUT = 60 # TODO: Make this configurable
 DEFAULT_SRC = 0
@@ -53,19 +54,16 @@ class Video:
         # if src is a number like "0" coerce to an int
         try:
             self.src = int(self.src)
-        except Exception as e:
+        except Exception:
             pass
 
-        usePiCamera = self.src == 'usePiCamera'
-
-        if usePiCamera:
-            kwargs = {'usePiCamera': True}
+        if self.src == 'usePiCamera':
             if not pi_camera.is_picamera_installed():
                 pi_camera.setup_picamera()
-        else:
-            kwargs = {'src': self.src}
 
-        self.__vs = VideoStream(**kwargs)
+            self.__vs = VideoStream(usePiCamera=True)
+        else:
+            self.__vs = ThreadedVideoReader(self.src)
 
     def __verify_frame_handler(self, frame_handler):
         if frame_handler is not None:
@@ -169,3 +167,6 @@ class Video:
         
         if self.__on_exit:
             self.__on_exit()
+
+    def get_fps(self):
+        return 0 if not self.__fps else self.__fps.fps()
