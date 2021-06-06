@@ -116,6 +116,7 @@ Some configuration options can be overridden by passing CLI options.
   - `--threaded`: Perform detections in a separate thread. This will speed up video but result in stale detections drawn to frames.
   - `--setup-coral`: Let Carl walk you through the setup of the Google Coral. (Additional install required)
   - `--src`: Video Source. Number or stream url or `usePiCamera`.
+  - `--width`: Video width.
   - `--model`: Model to use. Either `yolo`, `mobilenet`, or `coral`.
 
 

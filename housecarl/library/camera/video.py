@@ -50,6 +50,7 @@ class Video:
         self.__broken_stream = False
         self.__verify_frame_handler(on_frame)
 
+        # if src is a number like "0" coerce to an int
         try:
             self.src = int(self.src)
         except Exception as e:
@@ -120,7 +121,7 @@ class Video:
                     self.__on_alert("Video stream detected again!")
 
             if self.width:
-                frame = imutils.resize(frame, width=self.width)
+                frame = imutils.resize(frame, width=int(self.width))
 
             if self.__frame_handler:
                 self.__call_frame_handler(frame)
