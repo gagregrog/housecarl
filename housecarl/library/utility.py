@@ -1,7 +1,10 @@
 import os
+import sys
 import shutil
 import inspect
 import requests
+import sysconfig
+import subprocess
 from pathlib import Path
 
 def _log(log_type: str, *args) -> None:
@@ -11,13 +14,14 @@ def _log(log_type: str, *args) -> None:
 
     last_arg = args[len(args) - 1]
     prefix = '' if 'pre' not in last_arg else last_arg.get('pre')
+    prefix = prefix if 'emphasis' not in last_arg else '\n\t'
     data = args if not prefix else args[:-1]
 
     print('\n{}[{}]'.format(prefix, log_type.upper()), *data)
 
 info = lambda *args: _log('info', *args)
 warn = lambda *args: _log('warn', *args)
-error = lambda *args: _log('error', *args, {'pre': '\n\t'})
+error = lambda *args: _log('error', *args, {'emphasis': True})
 
 def num_args(func):
     spec = inspect.getfullargspec(func)
@@ -105,3 +109,52 @@ def download_large_file_from_google_drive(file_id, destination):
         response = session.get(URL, params = params, stream = True)
 
     save_response_content(response, destination)
+
+def get_reqs():
+    b_string =  subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+    string = b_string.decode()
+    reqs = [req for req in string.split('\n') if req]
+
+    return reqs
+
+def is_installed(package):
+    reqs = get_reqs()
+    names = [req.split('==')[0] for req in reqs]
+
+    return package in names
+
+def pip_install(*args):
+    clean_args = [word for words in args for word in words.split(' ')]
+    prev_reqs = get_reqs()
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *clean_args])
+    curr_reqs = get_reqs()
+    new_reqs = [req for req in curr_reqs if req not in prev_reqs]
+
+    return new_reqs
+
+# https://raspberrypi.stackexchange.com/a/118473/90630
+def is_raspberry_pi():
+    try:
+        with open('/sys/firmware/devicetree/base/model', 'r') as m:
+            if 'raspberry pi' in m.read().lower():
+                return True
+    except Exception:
+        pass
+
+    return False
+
+def get_missing_pycoral_dirs():
+    all_paths = sysconfig.get_paths()
+    site_packages = all_paths["purelib"]
+    pycoral_dir = os.path.join(site_packages, "pycoral")
+    
+    subdir_names = ["adapters", "utils"]
+    subdir_paths = [os.path.join(pycoral_dir, d) for d in subdir_names]
+    paths = [pycoral_dir] + subdir_paths
+
+    missing_paths = []
+    for dir_path in paths:
+        if not os.path.exists(dir_path):
+            missing_paths.append(dir_path)
+
+    return missing_paths

@@ -4,8 +4,10 @@ from time import sleep, time
 from imutils.video import VideoStream, FPS
 
 from housecarl.library import utility
+from housecarl.library.setup import pi_camera
+from housecarl.library.camera.read_video import ThreadedVideoReader
 
-TIMEOUT = 5
+TIMEOUT = 60 # TODO: Make this configurable
 DEFAULT_SRC = 0
 DEFAULT_VS_ARGS = (DEFAULT_SRC)
 class Video:
@@ -14,6 +16,7 @@ class Video:
         config,
         on_frame=None,
         on_exit=None,
+        on_alert=None
     ):
         """
         Instantiate an object capable of managing a CV2 Video Source.
@@ -33,24 +36,34 @@ class Video:
             If on_frame has a function signature that accepts any other number of arguments, an exception is raised.
 
         on_exit is an optional function that will be called when the video loop is closed
+
+        on_alert is an optional function that will be called with an alert message. Handle this however you see fit...like by sending a push notification.
         """
-        self.on_exit = on_exit
+        self.__on_exit = on_exit
+        self.__on_alert = on_alert
 
         utility.set_properties(config, self)
 
         self.__fps = None
         self.__looping = False
         self.__pass_stop = False
-        self.__last_frame_at = time()
+        self.__frame_check_at = time()
+        self.__broken_stream = False
         self.__verify_frame_handler(on_frame)
 
+        # if src is a number like "0" coerce to an int
         try:
             self.src = int(self.src)
-        except Exception as e:
+        except Exception:
             pass
 
-        kwargs = {'usePiCamera': True} if self.src == 'usePiCamera' else {'src': self.src}
-        self.__vs = VideoStream(**kwargs)
+        if self.src == 'usePiCamera':
+            if not pi_camera.is_picamera_installed():
+                pi_camera.setup_picamera()
+
+            self.__vs = VideoStream(usePiCamera=True)
+        else:
+            self.__vs = ThreadedVideoReader(self.src)
 
     def __verify_frame_handler(self, frame_handler):
         if frame_handler is not None:
@@ -61,11 +74,11 @@ class Video:
 
             self.__pass_stop = num_args_wanted == 2
 
-        self.frame_handler = frame_handler
+        self.__frame_handler = frame_handler
 
     def __call_frame_handler(self, frame):
         args = (frame, self.stop) if self.__pass_stop else (frame,)
-        self.frame_handler(*args)
+        self.__frame_handler(*args)
 
     def __run_loop(self):
         """
@@ -76,19 +89,39 @@ class Video:
         
         while self.__looping:
             frame = self.__vs.read()
+
             if frame is None:
-                
-                if time() - self.__last_frame_at > TIMEOUT:
-                    raise Exception('No frames for {} seconds. Likely no video feed.'.format(TIMEOUT))
+                if time() - self.__frame_check_at > TIMEOUT:
+                    # if we just detected a broken stream
+                    if not self.__broken_stream:
+                        self.__broken_stream = True
+
+                        # only handle alert if the broken stream state is new
+                        if self.__on_alert is not None:
+                            self.__on_alert(
+                                "No frames have been detected for {} seconds. Is the video stream working?".format(TIMEOUT)
+                            )
+                    # sleep when broken stream is first detected
+                    sleep(30)
+
+                    # reset the frame check time so have a chance to get more frames
+                    self.__frame_check_at = time()
 
                 continue
                 
-            self.__last_frame_at = time()
+            self.__frame_check_at = time()
+
+            # we've seen a frame again, so reset
+            if self.__broken_stream:
+                self.__broken_stream = False
+                
+                if self.__on_alert is not None:
+                    self.__on_alert("Video stream detected again!")
 
             if self.width:
-                frame = imutils.resize(frame, width=self.width)
+                frame = imutils.resize(frame, width=int(self.width))
 
-            if self.frame_handler:
+            if self.__frame_handler:
                 self.__call_frame_handler(frame)
 
             self.__fps.update()
@@ -132,5 +165,8 @@ class Video:
         self.__vs.stop()
         cv2.waitKey(1)
         
-        if self.on_exit:
-            self.on_exit()
+        if self.__on_exit:
+            self.__on_exit()
+
+    def get_fps(self):
+        return 0 if not self.__fps else self.__fps.fps()

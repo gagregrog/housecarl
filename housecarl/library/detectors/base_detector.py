@@ -33,10 +33,13 @@ class BaseDetector:
             raise Exception("Child of BaseDetector must set self.all_classes")
 
     def _parse_config(self, config):
+        # this sets all of the properties from the config so they are accessible by the class instance
         utility.set_properties(config, self)
 
     def _set_valid_classes(self):
-        self.valid_classes = utility.intersection(self.classes, self.all_classes)
+        is_dict = utility.get_typename(self.all_classes) == 'dict'
+        model_classes = self.all_classes if not is_dict else self.all_classes.values()
+        self.valid_classes = utility.intersection(self.classes, model_classes)
 
         # inform of any missing requested classes
         [BaseDetector.alert_missing(cls) for cls in self.classes if cls not in self.valid_classes]
@@ -106,8 +109,13 @@ class BaseDetector:
 
     def get_valid_detections(self, frame):
         # self._get_normalized_detections must be provided by the inheriting class
-        all_detections = self._get_normalized_detections(frame)
-        detections = self.filter_and_hydrate_normalized_detections(all_detections)
+        detections = None
+
+        try:
+            all_detections = self._get_normalized_detections(frame)
+            detections = self.filter_and_hydrate_normalized_detections(all_detections)
+        except Exception as e:
+            utility.error('error running inference\n', e)
         # return [] instead of None so we can determine
         # if the detections are new or old (threaded)
         return detections if detections else []

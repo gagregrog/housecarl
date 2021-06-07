@@ -2,17 +2,6 @@ import io
 import os
 from setuptools import setup, find_packages
 
-# https://raspberrypi.stackexchange.com/a/118473/90630
-def is_raspberry_pi():
-    try:
-        with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
-            if 'raspberry pi' in m.read().lower():
-                return True
-    except Exception:
-        pass
-
-    return False
-
 CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 with io.open(os.path.join(CURRENT_DIR, "README.md"), "r", encoding="utf-8") as f:
@@ -20,11 +9,6 @@ with io.open(os.path.join(CURRENT_DIR, "README.md"), "r", encoding="utf-8") as f
 
 with io.open(os.path.join(CURRENT_DIR, "requirements.txt"), "r", encoding="utf-8") as f:
     DEPENDENCIES = [line.strip() for line in f.readlines()]
-
-if is_raspberry_pi():
-    with io.open(os.path.join(CURRENT_DIR, "pi.requirements.txt"), "r", encoding="utf-8") as f:
-        PI_DEPENDENCIES = [line.strip() for line in f.readlines()]
-        DEPENDENCIES += PI_DEPENDENCIES
 
 setup(
     name="housecarl",
@@ -48,6 +32,7 @@ setup(
         "mobilenet",
         "pushover"
         "Google Coral",
+        "edge tpu",
         "Raspberry Pi"
     ],
     python_requires=">=3.6",

@@ -46,8 +46,10 @@ class CLI:
         ap.add_argument('--show-video', action="store_true", help="Show video.")
         ap.add_argument('--no-detect', action="store_true", help="Don't perform inference")
         ap.add_argument('--no-monitor', action="store_true", help="No push or write. No post-processing of detections.")
+        ap.add_argument('--setup-coral', action='store_true', help='Let Carl walk you through the Google Coral setup.')
         ap.add_argument('--threaded', action="store_true", help="Run the detections in a separate thread.")
         ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera"')
+        ap.add_argument('--width', default=None, help='Video Width.')
         ap.add_argument('--model', default=None, help='Model to use. Either "yolo" or "mobilenet".')
 
         self.__args = vars(ap.parse_args())
@@ -71,8 +73,13 @@ class CLI:
 
     def __init_config(self):
         self.__user_config = self.__default_config
-        utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'pre': '\n\t'})
-        utility.copy_file(default_config_path, self.__user_config_path)
+
+        if self.__user_config_path != config_path:
+            utility.warn('{} not found. Creating file and populating with defaults.\n'.format(self.__user_config_path), {'emphasis': True})
+            utility.copy_file(default_config_path, self.__user_config_path)
+        else:
+            utility.warn('{} not found. Using defaults.\n'.format(self.__user_config_path), {'emphasis': True})
+
         # pause so you can read the copy warning
         sleep(3)
 
@@ -168,6 +175,7 @@ class CLI:
         self.__override_if_arg_exists('video', 'display', argname='show_video')
         self.__override_if_arg_exists('video', 'display', argname='hide_video', override=False)
         self.__override_if_arg_exists('video', 'src')
+        self.__override_if_arg_exists('video', 'width')
         self.__override_if_arg_exists('detector', 'model')
         self.__override_if_arg_exists('detector', 'threaded')
 
@@ -185,6 +193,10 @@ class CLI:
 
     def process(self):
         self.__get_args()
+
+        if self.should_setup_coral():
+            return self
+            
         self.__read_configs()
         self.__merge_configs()
         self.__merge_args()
@@ -218,3 +230,6 @@ class CLI:
 
     def get_video_config(self):
         return self.__get_config_group('video')
+
+    def should_setup_coral(self):
+        return self.__args.get('setup_coral')

@@ -127,3 +127,6 @@ models*
 recordings
 !config.default.json
 firmware
+edgetpu_*
+*.tflite
+all_models
