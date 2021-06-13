@@ -2,7 +2,6 @@ import os
 import cv2
 import time
 from queue import Queue
-from pathlib import Path
 from threading import Thread
 from collections import deque
 from datetime import datetime
@@ -21,7 +20,15 @@ class Writer:
         self.__recording = False
         self.__last_recording_path = None
         self.__frames = deque(maxlen=self.buffer_size)
-        self.__fourcc = cv2.VideoWriter_fourcc(*self.fourcc)
+
+        if self.file_format == 'mp4':
+            fourcc = 'mp4v'
+        elif self.file_format == 'avi':
+            fourcc = 'MJPG'
+        else:
+            raise Exception('Writer file_format must be mp4 or avi.')
+
+        self.__fourcc = cv2.VideoWriter_fourcc(*fourcc)
         
     def __start(self, output_path):
         self.__recording = True
@@ -73,7 +80,7 @@ class Writer:
             time = timestamp.strftime("%Hh%Mm%Ss")
             date_dir = os.path.join(self.out_dir, date)
             utility.ensure_dir(date_dir)
-            filename = '{}_{}.avi'.format(date, time)
+            filename = '{}_{}.{}'.format(date, time, self.file_format)
             filepath = os.path.join(date_dir, filename)
             self.__last_recording_path = filepath
             self.__start(filepath)
