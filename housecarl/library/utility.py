@@ -7,6 +7,8 @@ import sysconfig
 import subprocess
 from pathlib import Path
 
+from housecarl.library import constants
+
 def _log(log_type: str, *args) -> None:
     """
     Utility [LOG_TYPE] printer.
@@ -158,3 +160,8 @@ def get_missing_pycoral_dirs():
             missing_paths.append(dir_path)
 
     return missing_paths
+
+def get_video_dir(optional_path=''):
+    video_dir = constants.recordings_path if optional_path == '' else os.path.abspath(os.path.expanduser(optional_path))
+
+    return video_dir
