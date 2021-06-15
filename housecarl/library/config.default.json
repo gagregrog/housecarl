@@ -24,7 +24,8 @@
     "timeout": 1,
     "out_dir": "",
     "buffer_size": 64,
-    "file_format": "mp4",
+    "fourcc": "theo",
+    "file_format": "ogv",
     "min_disk_space": 10
   },
   "pushover": {
