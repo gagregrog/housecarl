@@ -12,7 +12,7 @@ from housecarl.library import utility, constants
 class Writer:
     def __init__(self, config) -> None:
         utility.set_properties(config, self)
-        self.out_dir = constants.recordings_path if self.out_dir == '' else os.path.abspath(os.path.expanduser(self.out_dir))
+        self.out_dir = utility.get_video_dir(self.out_dir)
 
         self.__Q = None
         self.__writer = None
