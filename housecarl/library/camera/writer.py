@@ -20,15 +20,7 @@ class Writer:
         self.__recording = False
         self.__last_recording_path = None
         self.__frames = deque(maxlen=self.buffer_size)
-
-        if self.file_format == 'mp4':
-            fourcc = 'mp4v'
-        elif self.file_format == 'avi':
-            fourcc = 'MJPG'
-        else:
-            raise Exception('Writer file_format must be mp4 or avi.')
-
-        self.__fourcc = cv2.VideoWriter_fourcc(*fourcc)
+        self.__fourcc = cv2.VideoWriter_fourcc(*self.fourcc)
         
     def __start(self, output_path):
         self.__recording = True
