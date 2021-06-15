@@ -32,5 +32,9 @@
     "mock": true,
     "user_key": "",
     "api_token": ""
+  },
+  "server": {
+    "video_server": true,
+    "port": 5000
   }
 }
