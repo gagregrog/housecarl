@@ -87,7 +87,7 @@ Omit this category to disable event recordings.
   - `fps`: `int` - Stream FPS may vary, so you may find this needs tweaking depending on the video source.
   - `timeout`: `int` or `float` - Amount of time the writer thread should pause before looking for new frames to write.
   - `out_dir`: `str` - Absolute path to a directory for saving videos. Defaults to [recordings](recordings). Video writer will create subdirectories by date.
-  - `fourcc`: `str` - [FOURCC](https://www.fourcc.org/) codec to use for writing.
+  - `file_format`: `str` - Must be `mp4` or `avi`.
   - `buffer_size`: `int` - Size of the writer's queue. Larger values result in more "cushion" on either side of an event recording.
   - `min_disk_space`: `int` or `float` - If you have less than this quantity of free space, recordings will not be saved.
 

@@ -2,7 +2,6 @@ import os
 import cv2
 import time
 from queue import Queue
-from pathlib import Path
 from threading import Thread
 from collections import deque
 from datetime import datetime
@@ -13,7 +12,7 @@ from housecarl.library import utility, constants
 class Writer:
     def __init__(self, config) -> None:
         utility.set_properties(config, self)
-        self.out_dir = constants.recordings_path if self.out_dir == '' else os.path.abspath(os.path.expanduser(self.out_dir))
+        self.out_dir = utility.get_video_dir(self.out_dir)
 
         self.__Q = None
         self.__writer = None
@@ -73,7 +72,7 @@ class Writer:
             time = timestamp.strftime("%Hh%Mm%Ss")
             date_dir = os.path.join(self.out_dir, date)
             utility.ensure_dir(date_dir)
-            filename = '{}_{}.avi'.format(date, time)
+            filename = '{}_{}.{}'.format(date, time, self.file_format)
             filepath = os.path.join(date_dir, filename)
             self.__last_recording_path = filepath
             self.__start(filepath)

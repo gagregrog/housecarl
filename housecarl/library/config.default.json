@@ -23,13 +23,19 @@
     "fps": 15,
     "timeout": 1,
     "out_dir": "",
-    "fourcc": "MJPG",
     "buffer_size": 64,
+    "fourcc": "theo",
+    "file_format": "ogv",
     "min_disk_space": 10
   },
   "pushover": {
     "mock": true,
     "user_key": "",
     "api_token": ""
+  },
+  "server": {
+    "server_only": false,
+    "video_server": true,
+    "port": 5000
   }
 }

@@ -130,3 +130,8 @@ firmware
 edgetpu_*
 *.tflite
 all_models
+
+!housecarl/library/server/build
+!housecarl/library/server/build/*
+!housecarl/library/server/build/**/*
+todo.md

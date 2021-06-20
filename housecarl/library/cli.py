@@ -49,6 +49,8 @@ class CLI:
         ap.add_argument('--setup-coral', action='store_true', help='Let Carl walk you through the Google Coral setup.')
         ap.add_argument('--threaded', action="store_true", help="Run the detections in a separate thread.")
         ap.add_argument('--src', default=None, help='Video Source. Number or stream url or "usePiCamera"')
+        ap.add_argument('--video-server', action="store_true", help='Whether to start the video server')
+        ap.add_argument('--server-only', action="store_true", help="Only start the server, and nothing else.")
         ap.add_argument('--width', default=None, help='Video Width.')
         ap.add_argument('--model', default=None, help='Model to use. Either "yolo" or "mobilenet".')
 
@@ -176,8 +178,11 @@ class CLI:
         self.__override_if_arg_exists('video', 'display', argname='hide_video', override=False)
         self.__override_if_arg_exists('video', 'src')
         self.__override_if_arg_exists('video', 'width')
+        self.__override_if_arg_exists('video', 'video_server')
         self.__override_if_arg_exists('detector', 'model')
         self.__override_if_arg_exists('detector', 'threaded')
+        self.__override_if_arg_exists('server', 'server_only')
+
 
     def __override_if_arg_exists(self, config_group, config_key, argname=None, override=None):
         resolved_key = argname if argname else config_key
@@ -227,6 +232,19 @@ class CLI:
 
     def get_pushover_config(self):
         return self.__get_config_group('pushover')
+
+    def get_server_config(self):
+        server_config = self.__get_config_group('server')
+        writer_config = self.get_writer_config()
+
+        out_dir = ''
+        if writer_config is not None:
+            out_dir = writer_config.get('out_dir')
+
+        server_config['video_dir'] = out_dir
+
+        return server_config
+
 
     def get_video_config(self):
         return self.__get_config_group('video')

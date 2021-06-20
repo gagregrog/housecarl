@@ -6,6 +6,7 @@ from housecarl.library.monitor import Monitor
 from housecarl.library.notifier import Pushover
 from housecarl.library.detectors import Detector
 from housecarl.library.camera import Video, Writer
+from housecarl.library.server.server import Server
 from housecarl.library.setup.coral import setup_coral
 
 def __main(video):
@@ -16,6 +17,7 @@ def __main(video):
     
     cli.print_config()
 
+    server = None
     writer = None
     monitor = None
     detector = None
@@ -23,10 +25,18 @@ def __main(video):
     handle_frame = None
     handle_alert = None
 
+    server_config = cli.get_server_config()
     writer_config = cli.get_writer_config()
     monitor_config = cli.get_monitor_config()
     detector_config = cli.get_detector_config()
     pushover_config = cli.get_pushover_config()
+
+    if server_config:
+        server = Server(server_config)
+        server.start()
+
+        if server_config["server_only"]:
+            return
 
     if detector_config:
         utility.info('Loading detector...\n')
