@@ -1,5 +1,6 @@
 import os
 from flask import jsonify
+from waitress import serve
 from threading import Thread
 from werkzeug.utils import secure_filename
 from flask import Flask, send_file, make_response, send_from_directory
@@ -43,7 +44,7 @@ class Server:
         @app.route("/api/videos")
         def get_videos():
             if not os.path.isdir(self.video_dir):
-                return jsonify('Video directory does not exists'), 404
+                return jsonify({'message': 'Video directory does not exists'}), 404
 
             video_array = []
             dates = os.listdir(self.video_dir)
@@ -74,12 +75,16 @@ class Server:
 
     def __run(self):
         utility.info('Starting housecarl server on port {}.'.format(self.port))
-        utility.info('Serving videos from {}'.format(self.port, self.video_dir))
+        utility.info('Serving videos from {}'.format(self.video_dir))
         self.__server_started = True
-        self.__app.run(
-            debug=self.server_only,
-            port=self.port
-        )
+
+        if self.server_debug:
+            self.__app.run(
+                debug=True,
+                port=self.port
+            )
+        else:
+            serve(self.__app, listen='*:{}'.format(self.port))
 
     def start(self):
         if not self.__server_started:

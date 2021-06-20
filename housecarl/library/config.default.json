@@ -34,8 +34,8 @@
     "api_token": ""
   },
   "server": {
-    "server_only": false,
-    "video_server": true,
-    "port": 5000
+    "port": 5000,
+    "server_debug": false,
+    "server_only": false
   }
 }
