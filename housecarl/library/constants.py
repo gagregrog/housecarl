@@ -19,4 +19,5 @@ pycoral_rpi_wheel = "https://github.com/google-coral/pycoral/releases/download/v
 
 tflite_rpi_wheel = "https://github.com/google-coral/pycoral/releases/download/v1.0.1/tflite_runtime-2.5.0-cp37-cp37m-linux_armv7l.whl"
 
-templates_path = join(root_path, 'library', 'server', 'templates')
+build_path = join(housecarl_path, 'library', 'server', 'build')
+static_path = join(build_path, 'static')
