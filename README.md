@@ -99,6 +99,14 @@ Omit this category to disable push notifications.
   - `user_key`: `str` - Your [Pushover user key](https://pushover.net/dashboard).
   - `api_token`: `str` - Your [Pushover app token](https://pushover.net/api#registration).
 
+##### server
+
+Omit this category to disable the server.
+
+  `server_only`: `bool` - Run the server and nothing else.
+  `video_server`: `bool` - Enable the video playback in addition to configuring settings.
+  `port`: `int` - Defaults to 5000.
+
 ### CLI
 
 Some configuration options can be overridden by passing CLI options.
@@ -118,6 +126,7 @@ Some configuration options can be overridden by passing CLI options.
   - `--src`: Video Source. Number or stream url or `usePiCamera`.
   - `--width`: Video width.
   - `--model`: Model to use. Either `yolo`, `mobilenet`, or `coral`.
+  - `--server-only`: Start the server and do nothing else.
 
 
 ## Setup
@@ -274,17 +283,20 @@ If you installed Carl with `pipx`, simply run `pipx uninstall housecarl`.
 
 If you installed Carl via `git`, simply remove the folder you downloaded, and delete the virtual environment that you installed it into.
 
-### Enable Background Processing
-
- - TODO
-
 ### Local event playback in browser
 
- - TODO
+If you include a server section in your configuration file, Carl will spawn a server that can be accessed on your local network.
 
+This will enable video playback, as well as deleting videos.
+
+You will also be able to change Carl's configuration settings and temporarily disable him.
 
 
 ## Resources
+
+### Carl's Face
+
+- [housecalr-web-client](https://github.com/RobertMcReed/housercarl-web-client)
 
 ### Wyze
 
