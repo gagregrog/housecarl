@@ -31,6 +31,13 @@ def __main(video):
     detector_config = cli.get_detector_config()
     pushover_config = cli.get_pushover_config()
 
+    if server_config:
+        server = Server(server_config)
+        server.start()
+
+        if server_config["server_only"]:
+            return
+
     if detector_config:
         utility.info('Loading detector...\n')
         detector = Detector(detector_config)
@@ -48,10 +55,6 @@ def __main(video):
             writer=writer,
             pushover=pushover
         )
-
-    if server_config:
-        server = Server(server_config)
-        server.start()
 
     if detector:
         handle_detections = None if not monitor else monitor.handle_detections
