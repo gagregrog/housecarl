@@ -5,7 +5,7 @@ from flask import jsonify, request
 from werkzeug.utils import secure_filename
 from flask import Flask, send_file, make_response, send_from_directory
 
-from housecarl.library import utility, constants
+from housecarl.library.common import utility, constants
 
 def is_video_file(video_name):
     file_ending = video_name[-4:].lower()

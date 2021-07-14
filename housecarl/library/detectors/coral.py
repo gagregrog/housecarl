@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from housecarl.library.setup import coral
-from housecarl.library import constants, utility
+from housecarl.library.common import constants, utility
 from housecarl.library.detectors.base_detector import BaseDetector
 
 try:

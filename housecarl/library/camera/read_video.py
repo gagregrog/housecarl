@@ -3,7 +3,7 @@ import time
 from threading import Thread
 from collections import deque
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 
 # https://stackoverflow.com/a/58599708/8643833
 class ThreadedVideoReader:

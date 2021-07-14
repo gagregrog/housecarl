@@ -2,7 +2,7 @@ import numpy as np
 from threading import Thread
 from multiprocessing import Queue
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 from housecarl.library.camera.image import draw_detection
 
 class BaseDetector:

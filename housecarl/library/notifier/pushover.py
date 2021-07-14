@@ -2,7 +2,7 @@ import requests
 import numpy as np
 from threading import Thread
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 from housecarl.library.camera.image import mat_to_bytes
 
 PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"

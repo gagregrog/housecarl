@@ -6,7 +6,7 @@ from threading import Thread
 from collections import deque
 from datetime import datetime
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 
 # https://www.pyimagesearch.com/2016/02/29/saving-key-event-video-clips-with-opencv/
 class Writer:

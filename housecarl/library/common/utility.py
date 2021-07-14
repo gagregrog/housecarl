@@ -7,7 +7,7 @@ import sysconfig
 import subprocess
 from pathlib import Path
 
-from housecarl.library import constants
+from housecarl.library.common import constants
 
 def _log(log_type: str, *args) -> None:
     """

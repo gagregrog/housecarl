@@ -1,4 +1,4 @@
-from housecarl.library import utility
+from housecarl.library.common import utility
 
 def is_picamera_installed():
     return utility.is_installed('picamera')

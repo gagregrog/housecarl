@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-from housecarl.library import constants, utility
+from housecarl.library.common import constants, utility
 from housecarl.library.detectors.base_detector import BaseDetector
 
 MOBILENET_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]

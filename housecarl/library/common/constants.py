@@ -1,10 +1,10 @@
 from os.path import join, dirname, abspath
 
-housecarl_path = abspath(join(dirname(__file__), '..'))
-root_path = abspath(join(dirname(__file__), '..', '..'))
+housecarl_path = abspath(join(dirname(__file__), '..', '..'))
+root_path = abspath(join(dirname(__file__), '..', '..', '..'))
 
 config_path = join(root_path, 'config.json')
-default_config_path = join(housecarl_path, 'library', 'config.default.json')
+default_config_path = join(housecarl_path, 'app', 'config.default.json')
 
 recordings_path = join(root_path, 'recordings')
 

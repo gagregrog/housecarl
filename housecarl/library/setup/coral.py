@@ -1,4 +1,4 @@
-from housecarl.library import constants, utility
+from housecarl.library.common import constants, utility
 from housecarl.library.setup import coral_default, coral_pi
 
 def setup_coral():

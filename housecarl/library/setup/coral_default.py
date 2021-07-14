@@ -2,7 +2,7 @@ import os
 import zipfile
 import platform
 
-from housecarl.library import utility, constants
+from housecarl.library.common import utility, constants
 
 def verify_python_version():
     version = platform.python_version()

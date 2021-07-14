@@ -3,7 +3,7 @@ import imutils
 from time import sleep, time
 from imutils.video import VideoStream, FPS
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 from housecarl.library.setup import pi_camera
 from housecarl.library.camera.read_video import ThreadedVideoReader
 

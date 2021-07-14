@@ -2,7 +2,7 @@ import os
 import platform
 import subprocess
 
-from housecarl.library import constants, utility
+from housecarl.library.common import constants, utility
 
 def verify_python_version():
     version = platform.python_version()

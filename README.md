@@ -41,7 +41,7 @@ See the available overrides passable as [CLI options](#cli-overrides).
 
 ### Configuration
 
-By default, the app will search for `config.json` at the root of the project. If this file is not found, it will load the default configuration found at [housecarl/library/config.default.json](housecarl/library/config.default.json).
+By default, the app will search for `config.json` at the root of the project. If this file is not found, it will load the default configuration found at [housecarl/app/config.default.json](housecarl/app/config.default.json).
 
 #### Configuration Options
 
@@ -53,7 +53,7 @@ The configuration options fall into five main categories:
   - `writer` - Omit this category to disable event recordings
   - `pushover` - Omit this category to disable event notifications
 
-To view all default values, please reference the [default configuration file](housecarl/library/config.default.json). These defaults will be merged with any configuration options you provide.
+To view all default values, please reference the [default configuration file](housecarl/app/config.default.json). These defaults will be merged with any configuration options you provide.
 
 The behavior of each option is explained below:
 

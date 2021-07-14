@@ -1,5 +1,5 @@
-from housecarl.library import utility
-from housecarl.library.cli import CLI
+from housecarl.app.cli import CLI
+from housecarl.library.common import utility
 from housecarl.library.monitor import Monitor
 from housecarl.library.notifier import Pushover
 from housecarl.library.detectors import Detector

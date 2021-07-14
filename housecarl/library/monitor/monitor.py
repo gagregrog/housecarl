@@ -1,6 +1,6 @@
 from time import time
 
-from housecarl.library import utility
+from housecarl.library.common import utility
 from housecarl.library.monitor.detection_series import DetectionSeries
 
 class Monitor:
