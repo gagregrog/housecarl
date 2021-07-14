@@ -25,12 +25,12 @@ class Server:
         # resolve the video directory
         config.set('video_dir', utility.get_video_dir(config.get('video_dir')))
 
-        app = Flask(__name__, static_url_path='/build/static')
-        self.__app = app
+        flask_app = Flask(__name__, static_url_path='/build/static')
+        self.__flask_app = flask_app
 
         # Serve React App
-        @app.route('/', defaults={'path': ''})
-        @app.route('/<path:path>')
+        @flask_app.route('/', defaults={'path': ''})
+        @flask_app.route('/<path:path>')
         def serve(path):
             if path != "" and os.path.exists(os.path.join(constants.build_path, path)):
                 resp = make_response(send_from_directory(constants.build_path, path), 200)
@@ -44,13 +44,18 @@ class Server:
                 return jsonify('Not Found'), 404
 
 
+        # a health check endpoint
+        @flask_app.route('/health', methods=['GET'])
+        def health():
+            return jsonify('OK'), 200
+
         # a route at /api/config that returns the full cli config
-        @app.route('/api/config', methods=['GET'])
+        @flask_app.route('/api/config', methods=['GET'])
         def get_config():
             return jsonify(self.cli.dict())
 
         # a route at /api/confif/<group> that returns the config for the given group
-        @app.route('/api/config/<group>', methods=['GET'])
+        @flask_app.route('/api/config/<group>', methods=['GET'])
         def get_config_group(group):
             # if the group is not valid, return a 404
             if not self.cli.is_valid_group_name(group):
@@ -59,7 +64,7 @@ class Server:
             return jsonify(self.cli.get_group_dict(group))
 
         # add a /api/config route that sets config values
-        @app.route('/api/config', methods=['POST'])
+        @flask_app.route('/api/config', methods=['POST'])
         def set_config():
             data = request.get_json()
 
@@ -87,7 +92,7 @@ class Server:
             })
 
             
-        @app.route("/api/videos")
+        @flask_app.route("/api/videos")
         def get_videos():
             if not os.path.isdir(self.config.get('video_dir')):
                 return jsonify({'message': 'Video directory does not exists'}), 404
@@ -110,7 +115,7 @@ class Server:
 
             return jsonify(video_array)
 
-        @app.route('/api/videos/<video_date>/<video_name>')
+        @flask_app.route('/api/videos/<video_date>/<video_name>')
         def serve_video(video_date, video_name):
             safe_video_date = secure_filename(video_date)
             safe_video_name = secure_filename(video_name)
@@ -125,12 +130,12 @@ class Server:
         self.__server_started = True
 
         if self.config.get('server_debug'):
-            self.__app.run(
+            self.__flask_app.run(
                 debug=True,
                 port=self.config.get('port')
             )
         else:
-            serve(self.__app, listen='*:{}'.format(self.config.get('port')))
+            serve(self.__flask_app, listen='*:{}'.format(self.config.get('port')))
 
     def start(self):
         if not self.__server_started:
