@@ -6,27 +6,27 @@ from threading import Thread
 from collections import deque
 from datetime import datetime
 
-from housecarl.library import utility, constants
+from housecarl.library import utility
 
 # https://www.pyimagesearch.com/2016/02/29/saving-key-event-video-clips-with-opencv/
 class Writer:
     def __init__(self, config) -> None:
-        utility.set_properties(config, self)
-        self.out_dir = utility.get_video_dir(self.out_dir)
+        self.config = config
+        config.set('out_dir', utility.get_video_dir(config.get('out_dir')))
 
         self.__Q = None
         self.__writer = None
         self.__thread = None
         self.__recording = False
         self.__last_recording_path = None
-        self.__frames = deque(maxlen=self.buffer_size)
-        self.__fourcc = cv2.VideoWriter_fourcc(*self.fourcc)
+        self.__frames = deque(maxlen=config.get('buffer_size'))
+        self.__fourcc = cv2.VideoWriter_fourcc(*self.config.get('fourcc'))
         
     def __start(self, output_path):
         self.__recording = True
         (frame_height, frame_width) = self.__frames[0].shape[:2]
         dimensions = (frame_width, frame_height)
-        self.__writer = cv2.VideoWriter(output_path, self.__fourcc, self.fps, dimensions, True)
+        self.__writer = cv2.VideoWriter(output_path, self.__fourcc, self.config.get('fps'), dimensions, True)
         self.__Q = Queue()
 
         # add all frames in the deque to the queue
@@ -49,7 +49,7 @@ class Writer:
                 self.__writer.write(frame)
             else:
                 # if we have no frames to write, sleep so we don't waste CPU cycles
-                time.sleep(self.timeout)
+                time.sleep(self.config.get('timeout'))
 
     def __flush(self):
         # write all remaining frames to the file
@@ -62,17 +62,18 @@ class Writer:
 
     def start(self):
         free_disk_space = utility.get_free_space()
-        if free_disk_space < self.min_disk_space:
-            utility.error('Remaining disk space is too small to record video: {} < {}'.format(free_disk_space, self.min_disk_space))
+        min_disk_space = self.config.get('min_disk_space')
+        if free_disk_space < min_disk_space:
+            utility.error('Remaining disk space is too small to record video: {} < {}'.format(free_disk_space, min_disk_space))
             return
 
         if not self.is_recording():
             timestamp = datetime.now()
             date = timestamp.strftime("%Y-%m-%d")
             time = timestamp.strftime("%Hh%Mm%Ss")
-            date_dir = os.path.join(self.out_dir, date)
+            date_dir = os.path.join(self.config.get('out_dir'), date)
             utility.ensure_dir(date_dir)
-            filename = '{}_{}.{}'.format(date, time, self.file_format)
+            filename = '{}_{}.{}'.format(date, time, self.config.get('file_format'))
             filepath = os.path.join(date_dir, filename)
             self.__last_recording_path = filepath
             self.__start(filepath)

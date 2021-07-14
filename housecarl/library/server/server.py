@@ -1,7 +1,7 @@
 import os
-from flask import jsonify
 from waitress import serve
 from threading import Thread
+from flask import jsonify, request
 from werkzeug.utils import secure_filename
 from flask import Flask, send_file, make_response, send_from_directory
 
@@ -16,11 +16,14 @@ def should_serve_index(path):
     return '.' not in path or is_video_file(path)
 
 class Server:
-    def __init__(self, config):
-        utility.set_properties(config, self)
+    def __init__(self, cli, config):
+        self.cli = cli
+        self.config = config
         self.__thread = None
         self.__server_started = False
-        self.video_dir = utility.get_video_dir(self.video_dir)
+
+        # resolve the video directory
+        config.set('video_dir', utility.get_video_dir(config.get('video_dir')))
 
         app = Flask(__name__, static_url_path='/build/static')
         self.__app = app
@@ -41,17 +44,60 @@ class Server:
                 return jsonify('Not Found'), 404
 
 
+        # a route at /api/config that returns the full cli config
+        @app.route('/api/config', methods=['GET'])
+        def get_config():
+            return jsonify(self.cli.dict())
+
+        # a route at /api/confif/<group> that returns the config for the given group
+        @app.route('/api/config/<group>', methods=['GET'])
+        def get_config_group(group):
+            # if the group is not valid, return a 404
+            if not self.cli.is_valid_group_name(group):
+                return jsonify('Not Found'), 404
+
+            return jsonify(self.cli.get_group_dict(group))
+
+        # add a /api/config route that sets config values
+        @app.route('/api/config', methods=['POST'])
+        def set_config():
+            data = request.get_json()
+
+            # return a 400 error if the request is not valid
+            # the request must include a key, value, and group
+            if not data or not data.get('key') or not data.get('value') or not data.get('group'):
+                return jsonify({
+                    'error': 'Invalid request',
+                    'message': 'The request must include a key, value, and group.'
+                }), 400
+
+            # try to set the value of the config key and return an error if it fails
+            try:
+                cli.set(data.get('group'), data.get('key'), data.get('value'))
+            except Exception as e:
+                return jsonify({
+                    'error': 'Unable to set config',
+                    'message': str(e)
+                }), 400
+
+            # return a success message and the updated config group
+            return jsonify({
+                'success': 'Config updated',
+                'config': cli.get_group_dict(data.get('group'))
+            })
+
+            
         @app.route("/api/videos")
         def get_videos():
-            if not os.path.isdir(self.video_dir):
+            if not os.path.isdir(self.config.get('video_dir')):
                 return jsonify({'message': 'Video directory does not exists'}), 404
 
             video_array = []
-            dates = os.listdir(self.video_dir)
+            dates = os.listdir(self.config.get('video_dir'))
             dates.sort()
 
             for date in dates:
-                date_path = os.path.join(self.video_dir, date)
+                date_path = os.path.join(self.config.get('video_dir'), date)
                 
                 if os.path.isdir(date_path):
                     video_names = os.listdir(date_path)
@@ -68,27 +114,27 @@ class Server:
         def serve_video(video_date, video_name):
             safe_video_date = secure_filename(video_date)
             safe_video_name = secure_filename(video_name)
-            video_path = os.path.join(self.video_dir, safe_video_date, safe_video_name)
+            video_path = os.path.join(self.config.get('video_dir'), safe_video_date, safe_video_name)
             resp = make_response(send_file(video_path, 'video/ogg'))
             resp.headers['Content-Disposition'] = 'inline'
             return resp
 
     def __run(self):
-        utility.info('Starting housecarl server on port {}.'.format(self.port))
-        utility.info('Serving videos from {}'.format(self.video_dir))
+        utility.info('Starting housecarl server on port {}.'.format(self.config.get('port')))
+        utility.info('Serving videos from {}'.format(self.config.get('video_dir')))
         self.__server_started = True
 
-        if self.server_debug:
+        if self.config.get('server_debug'):
             self.__app.run(
                 debug=True,
-                port=self.port
+                port=self.config.get('port')
             )
         else:
-            serve(self.__app, listen='*:{}'.format(self.port))
+            serve(self.__app, listen='*:{}'.format(self.config.get('port')))
 
     def start(self):
         if not self.__server_started:
-            if not self.server_only:
+            if not self.config.get('server_only'):
                 self.__thread = Thread(target=self.__run, args=())
                 self.__thread.daemon = True
                 self.__thread.start()

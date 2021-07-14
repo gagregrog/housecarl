@@ -20,19 +20,20 @@ class CoralDetector(BaseDetector):
         coral.verify_lib_edge_tpu_install()
         coral.verify_pycoral_install()
 
-        self.labels_path = os.path.join(constants.coral_path, 'coco_labels.txt')
-        self.model_path = os.path.join(constants.coral_path, 'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
+        self.__labels_path = os.path.join(constants.coral_path, 'coco_labels.txt')
+        self.__model_path = os.path.join(constants.coral_path, 'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
         
         self.__set_all_classes()
         self.__init_interpreter()
         
+        self.config = config
         super().__init__(config)
 
     def __set_all_classes(self):
-        if not (os.path.exists(self.model_path) and os.path.exists(self.labels_path)):
+        if not (os.path.exists(self.__model_path) and os.path.exists(self.__labels_path)):
             self.__download_model_files()
 
-        labels = read_label_file(self.labels_path)
+        labels = read_label_file(self.__labels_path)
         self.set_all_classes(labels)
 
     def __download_model_files(self):
@@ -45,14 +46,14 @@ class CoralDetector(BaseDetector):
         model_url = 'https://github.com/google-coral/test_data/raw/master/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite'
         
         # we should parallelize this
-        if not os.path.exists(self.model_path):
-            utility.download_file(model_url, self.model_path)
+        if not os.path.exists(self.__model_path):
+            utility.download_file(model_url, self.__model_path)
 
-        if not os.path.exists(self.labels_path):
-            utility.download_file(label_url, self.labels_path)
+        if not os.path.exists(self.__labels_path):
+            utility.download_file(label_url, self.__labels_path)
 
     def __init_interpreter(self):
-        self.interpreter = make_interpreter(self.model_path)
+        self.interpreter = make_interpreter(self.__model_path)
         self.interpreter.allocate_tensors()
         self.inference_size = input_size(self.interpreter)
 

@@ -4,7 +4,7 @@ from housecarl.library import utility
 
 class DetectionSeries:
     def __init__(self, config):
-        utility.set_properties(config, self)
+        self.config = config
 
         now = time()
         self.__first_detection_at = now
@@ -22,15 +22,15 @@ class DetectionSeries:
 
     def __detection_ratio_is_high_enough(self):
         num_processed = self.__num_frames_processed
-        if not num_processed or num_processed < self.min_detection_frames:
+        if not num_processed or num_processed < self.config.get('min_detection_frames'):
             return False
 
         detection_ratio = self.__num_detections_in_series / num_processed
 
-        return detection_ratio >= self.min_detection_ratio
+        return detection_ratio >= self.config.get('min_detection_ratio')
 
     def __detected_in_enough_frames(self):
-        return self.__num_detections_in_series >= self.min_detection_frames
+        return self.__num_detections_in_series >= self.config.get('min_detection_frames')
 
     def __should_activate_series(self):
         if self.series_is_active():
@@ -61,12 +61,12 @@ class DetectionSeries:
     def max_life_reached(self):
         time_since_first_detection = time() - self.__first_detection_at
 
-        return time_since_first_detection >= self.max_detection_duration
+        return time_since_first_detection >= self.config.get('max_detection_duration')
 
     def detection_lapse_interval_exceeded(self):
         time_since_last_detection = time() - self.__last_detection_at
 
-        return time_since_last_detection >= self.detection_lapse_timeout
+        return time_since_last_detection >= self.config.get('detection_lapse_timeout')
 
     def process_frame(self, frame, detections):
         self.__inc_detections()

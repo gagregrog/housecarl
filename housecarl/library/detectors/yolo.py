@@ -25,7 +25,7 @@ class YoloDetector(BaseDetector):
 
         self._set_all_classes()
         self._read_net()
-
+        self.config = config
         super().__init__(config)
 
     def __download_model_files(self):
@@ -53,10 +53,10 @@ class YoloDetector(BaseDetector):
 
     def _read_net(self):
         # read the pretrained model and configs
-        self.net = cv2.dnn.readNetFromDarknet(self.__cfg_path, self.__weights_path)
+        self.__net = cv2.dnn.readNetFromDarknet(self.__cfg_path, self.__weights_path)
 
-        self.net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-        self.net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+        self.__net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        self.__net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
 
     def _get_raw_detections(self, frame):
@@ -64,13 +64,13 @@ class YoloDetector(BaseDetector):
         blob = cv2.dnn.blobFromImage(frame, SCALE, (416, 416), (0, 0, 0), True, crop=False)
 
         # set the input for the neural net
-        self.net.setInput(blob)
+        self.__net.setInput(blob)
 
-        layer_names = self.net.getLayerNames()
-        output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+        layer_names = self.__net.getLayerNames()
+        output_layers = [layer_names[i[0] - 1] for i in self.__net.getUnconnectedOutLayers()]
 
         # gather the predictions from the output layers
-        raw_detections = self.net.forward(output_layers)
+        raw_detections = self.__net.forward(output_layers)
 
         return raw_detections
 

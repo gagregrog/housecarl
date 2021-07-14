@@ -162,6 +162,6 @@ def get_missing_pycoral_dirs():
     return missing_paths
 
 def get_video_dir(optional_path=''):
-    video_dir = constants.recordings_path if optional_path == '' else os.path.abspath(os.path.expanduser(optional_path))
+    video_dir = constants.recordings_path if not optional_path else os.path.abspath(os.path.expanduser(optional_path))
 
     return video_dir

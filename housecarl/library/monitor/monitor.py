@@ -6,13 +6,11 @@ from housecarl.library.monitor.detection_series import DetectionSeries
 class Monitor:
     def __init__(self, config, writer=None, pushover=None):
         self.config = config
-        self.writer = writer
-        self.pushover = pushover
+        self.__writer = writer
+        self.__pushover = pushover
         self.__last_detections = []
         self.__detection_series = None
         self.__last_series_ended_at = None
-
-        utility.set_properties(config, self)
 
     def __spawn_new_series(self):
         utility.info('Person detected! Spawing new detection series.')
@@ -26,7 +24,7 @@ class Monitor:
             time_ok = True
         else:
             time_since_last_series = time() - self.__last_series_ended_at
-            time_ok = time_since_last_series >= self.post_detection_debounce
+            time_ok = time_since_last_series >= self.config.get('post_detection_debounce')
 
         return not time_ok
 
@@ -37,18 +35,18 @@ class Monitor:
         round_conf = utility.get_precision(confidence, 3)
 
         message = '{} detected with confidence {}'.format(capital_label, round_conf)
-        self.pushover.send_push_notification(message, frame)
+        self.__pushover.send_push_notification(message, frame)
 
     def __handle_series_activation(self):
         utility.info('Detection verified.')
 
         # if we have push notifications, send the alert
-        if self.pushover is not None:
+        if self.__pushover is not None:
             self.__send_first_notification()
         
         # if we are recording, start a recording
-        if self.writer is not None:
-            self.writer.start()
+        if self.__writer is not None:
+            self.__writer.start()
 
 
     def __terminate_detection_series(self):
@@ -56,7 +54,7 @@ class Monitor:
         # otherwise we wouldn't have sent a notification
         if self.__detection_series.series_is_active():
             self.__last_series_ended_at = time()
-            utility.info('Waiting {} seconds before starting new detection series.\n'.format(self.config['post_detection_debounce']))
+            utility.info('Waiting {} seconds before starting new detection series.\n'.format(self.config.get('post_detection_debounce')))
             
             # If we've been recording, finish the recording
             self.finish_recording()
@@ -69,8 +67,8 @@ class Monitor:
 
     def handle_detections(self, detections, frame):
         # always add the frame
-        if self.writer is not None:
-            self.writer.update(frame)
+        if self.__writer is not None:
+            self.__writer.update(frame)
             
         # stale detections only occur when threaded
         stale_detections = self.__last_detections is detections
@@ -109,12 +107,12 @@ class Monitor:
 
         if max_life_reached or detection_lapse_exceeded:
             if detection_lapse_exceeded:
-                utility.info('No detections for {} seconds'.format(self.config['detection_lapse_timeout']))
+                utility.info('No detections for {} seconds'.format(self.config.get('detection_lapse_timeout')))
             else:
-                utility.info('Max life of {} seconds reached'.format(self.config['max_detection_duration']))
+                utility.info('Max life of {} seconds reached'.format(self.config.get('max_detection_duration')))
 
             self.__terminate_detection_series()
 
     def finish_recording(self):
-        if self.writer and self.writer.is_recording():
-            self.writer.finish()
+        if self.__writer and self.__writer.is_recording():
+            self.__writer.finish()

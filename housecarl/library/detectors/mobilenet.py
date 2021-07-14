@@ -9,9 +9,10 @@ MOBILENET_CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat", "bott
 
 class MobileNetDetector(BaseDetector):
     def __init__(self, config):
-        self.model_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
-        self.prototxt_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.prototxt')
+        self.__model_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.caffemodel')
+        self.__prototxt_path = os.path.join(constants.mobilenet_path, 'MobileNetSSD_deploy.prototxt')
         
+        self.config = config
         self.__set_all_classes()
         self.__read_net()
         
@@ -29,22 +30,22 @@ class MobileNetDetector(BaseDetector):
         prototxt_url = 'https://drive.google.com/uc?export=download&id=1B0-S_Dd_tKljtMy-5-Yqn2biDrTVBZ3q'
         
         # we should parallelize this
-        utility.download_file(model_url, self.model_path)
-        utility.download_file(prototxt_url, self.prototxt_path)
+        utility.download_file(model_url, self.__model_path)
+        utility.download_file(prototxt_url, self.__prototxt_path)
 
     def __read_net(self):
-        if not (os.path.exists(self.model_path) and os.path.exists(self.prototxt_path)):
+        if not (os.path.exists(self.__model_path) and os.path.exists(self.__prototxt_path)):
             self.__download_model_files()
 
-        self.net = cv2.dnn.readNetFromCaffe(
-            self.prototxt_path,
-            self.model_path
+        self.__net = cv2.dnn.readNetFromCaffe(
+            self.__prototxt_path,
+            self.__model_path
         )
 
     def __get_raw_detections(self, frame):
         blob = cv2.dnn.blobFromImage(frame, size=(300, 300), ddepth=cv2.CV_8U)
-        self.net.setInput(blob, scalefactor=1.0/127.5, mean=[127.5, 127.5, 127.5])
-        raw_detections = self.net.forward()
+        self.__net.setInput(blob, scalefactor=1.0/127.5, mean=[127.5, 127.5, 127.5])
+        raw_detections = self.__net.forward()
 
         return raw_detections
 

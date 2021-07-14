@@ -12,6 +12,7 @@ class CLI:
         self.__config = None
         self.__user_config = None
         self.__default_config = None
+        self.__process()
 
     @staticmethod
     def read_json(json_path):
@@ -192,11 +193,19 @@ class CLI:
             resolved_val = val if override is None else override
             self.__update_config(config_group, config_key, resolved_val)
     
-    def __get_config_group(self, key):
-        group = self.__config.get(key)
-        return group.copy() if group else None
+    def get_group_dict(self, group_key, original=False):
+        """
+        Return a config group from the config dictionary.
+        Set original=True to return the original config group instead of a copy.
+        """
+        group = self.__config.get(group_key)
 
-    def process(self):
+        if not group:
+            return None
+
+        return group if original else group.copy()
+
+    def __process(self):
         self.__get_args()
 
         if self.should_setup_coral():
@@ -221,33 +230,115 @@ class CLI:
             print('\n\tConfig group: {}'.format(group_name))
             [print('\t\t{}: {}'.format(k, '<*MASKED*>' if 'token' in k and v else v)) for k, v in group_values.items()]
 
+    def is_valid_group_name(self, group_name):
+        return group_name in self.__config
+
+    # return a copy of the config dictionary or an empty dictionary if no config present
+    def dict(self):
+        if self.__config is None:
+            return {}
+            
+        return self.__config.copy()
+
+    def get(self, group_name, config_key):
+        """
+        Get a config value.
+        """
+        if self.__config is None:
+            raise Exception('config not processed')
+
+        group = self.get_group_dict(group_name)
+        if group is None:
+            raise Exception('config group not found: {}'.format(group_name))
+
+        return group.get(config_key)
+
+    def set(self, group_name, config_key, config_value):
+        """
+        Set a config value.
+        """
+        if self.__config is None:
+            raise Exception('config not processed')
+
+        group = self.get_group_dict(group_name, original=True)
+        if group is None:
+            raise Exception('config group not found: {}'.format(group_name))
+
+        # throw an error if the config_value is not of the expected type
+        expected_type = utility.get_typename(self.get(group_name, config_key))
+        config_value_type = utility.get_typename(config_value)
+        if config_value_type != expected_type:
+            if config_key == 'src' and (config_value_type == 'int' or config_value_type == 'str'):
+                # allow string or int for video.src
+                pass
+            else:
+                raise Exception(
+                    'Expected config value of type "{}" but got "{}". Group: {}, Key: {}, Value: {}'
+                        .format(
+                            expected_type,
+                            config_value_type,
+                            group_name,
+                            config_key,
+                            config_value
+                        )
+                )
+
+        group[config_key] = config_value
+
+    def get_config_group(self, group_name):
+        """
+        Return a config group from the config dictionary if it exists, otherwise return None.
+        """
+        if self.is_valid_group_name(group_name):
+            return CLI_Group(self, group_name)
+
+        return None
+
     def get_detector_config(self):
-        return self.__get_config_group('detector')
+        return self.get_config_group('detector')
 
     def get_writer_config(self):
-        return self.__get_config_group('writer')
+        return self.get_config_group('writer')
 
     def get_monitor_config(self):
-        return self.__get_config_group('monitor')
+        return self.get_config_group('monitor')
 
     def get_pushover_config(self):
-        return self.__get_config_group('pushover')
+        return self.get_config_group('pushover')
 
     def get_server_config(self):
-        server_config = self.__get_config_group('server')
-        writer_config = self.get_writer_config()
+        server_config = self.get_config_group('server')
+        writer_config = self.get_group_dict('writer')
 
         out_dir = ''
         if writer_config is not None:
             out_dir = writer_config.get('out_dir')
 
-        server_config['video_dir'] = out_dir
+        if out_dir:
+            server_config.set('video_dir', out_dir)
 
         return server_config
 
-
     def get_video_config(self):
-        return self.__get_config_group('video')
+        return self.get_config_group('video')
 
     def should_setup_coral(self):
         return self.__args.get('setup_coral')
+
+class CLI_Group:
+    def __init__(self, cli: CLI, group_name: str):
+        self.__cli = cli
+        self.__group_name = group_name
+
+        # raise an exception if the group name is not valid
+        if not self.__cli.is_valid_group_name(group_name):
+            raise Exception('Invalid group name: {}'.format(group_name))
+
+    def get(self, config_key):
+        return self.__cli.get(self.__group_name, config_key)
+
+    def set(self, config_key, config_value):
+        self.__cli.set(self.__group_name, config_key, config_value)
+
+    def dict(self):
+        self.__cli.get_group_dict(self.__group_name)

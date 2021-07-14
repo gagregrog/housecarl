@@ -7,75 +7,71 @@ from housecarl.library.camera.image import draw_detection
 
 class BaseDetector:
     def __init__(self, config):
+        self.__config = config
         self.__verify_child()
-        self._parse_config(config)
         self._set_valid_classes()
         self._set_colors()
 
-        if self.threaded:
-            self.inputQueue = Queue(maxsize=1)
-            self.outputQueue = Queue(maxsize=1)
+        if self.config.get('threaded'):
+            self.__inputQueue = Queue(maxsize=1)
+            self.__outputQueue = Queue(maxsize=1)
 
-            self.thread_active = True
+            self.__thread_active = True
             t = Thread(target=self._handle_input_queue, args=())
             t.daemon = True
             t.start()
 
             # use [] instead of None for identifiability
-            self.last_detections = []
+            self.__last_detections = []
 
     @staticmethod
     def alert_missing(cls):
         utility.warn('Requested class "{}" does not exist in set of all classes.'.format(cls))
 
     def __verify_child(self):
-        if self.all_classes is None:
-            raise Exception("Child of BaseDetector must set self.all_classes")
-
-    def _parse_config(self, config):
-        # this sets all of the properties from the config so they are accessible by the class instance
-        utility.set_properties(config, self)
+        if self.__all_classes is None:
+            raise Exception("Child of BaseDetector must set self.set_all_classes")
 
     def _set_valid_classes(self):
-        is_dict = utility.get_typename(self.all_classes) == 'dict'
-        model_classes = self.all_classes if not is_dict else self.all_classes.values()
-        self.valid_classes = utility.intersection(self.classes, model_classes)
+        is_dict = utility.get_typename(self.__all_classes) == 'dict'
+        model_classes = self.__all_classes if not is_dict else self.__all_classes.values()
+        self.__valid_classes = utility.intersection(self.config.get('classes'), model_classes)
 
         # inform of any missing requested classes
-        [BaseDetector.alert_missing(cls) for cls in self.classes if cls not in self.valid_classes]
+        [BaseDetector.alert_missing(cls) for cls in self.config.get('classes') if cls not in self.__valid_classes]
 
 
     def _set_colors(self):
-        self.colors = np.random.uniform(0, 255, size=(len(self.valid_classes), 3))
+        self.__colors = np.random.uniform(0, 255, size=(len(self.__valid_classes), 3))
 
     def _handle_input_queue(self):
-        while self.thread_active:
+        while self.__thread_active:
             # check to see if there is a frame in the input queue
-            if not self.inputQueue.empty():
+            if not self.__inputQueue.empty():
                 # grab the frame, run the detection, and add it to the queue
-                frame = self.inputQueue.get()
+                frame = self.__inputQueue.get()
 
                 detections = self.get_valid_detections(frame)
-                self.outputQueue.put(detections)
+                self.__outputQueue.put(detections)
 
     def _process_frame_in_thread(self, frame, on_detections=None):
         # only put in new frames when we are ready to process them
-        if self.inputQueue.empty():
-            self.inputQueue.put(frame)
+        if self.__inputQueue.empty():
+            self.__inputQueue.put(frame)
 
-        if not self.outputQueue.empty():
-            self.last_detections = self.outputQueue.get()
+        if not self.__outputQueue.empty():
+            self.__last_detections = self.__outputQueue.get()
 
-        if self.show_detections and self.last_detections:
-            self.draw_detections(frame, self.last_detections)
+        if self.config.get('show_detections') and self.__last_detections:
+            self.draw_detections(frame, self.__last_detections)
         
         if on_detections:
-            args = (self.last_detections) if utility.num_args(on_detections) == 1 else (self.last_detections, frame)
+            args = (self.__last_detections) if utility.num_args(on_detections) == 1 else (self.__last_detections, frame)
             on_detections(*args)
 
     def _process_frame_without_thread(self, frame, on_detections=None):
         detections = self.get_valid_detections(frame)
-        if self.show_detections:
+        if self.config.get('show_detections'):
             self.draw_detections(frame, detections)
         
         if on_detections:
@@ -83,23 +79,23 @@ class BaseDetector:
             on_detections(*args)
 
     def set_all_classes(self, classes):
-        self.all_classes = classes
+        self.__all_classes = classes
 
     def class_is_valid(self, label):
-        return label in self.valid_classes
+        return label in self.__valid_classes
 
     def get_class_index(self, label):
-        return self.valid_classes.index(label)
+        return self.__valid_classes.index(label)
 
     def get_label_color(self, label):
-        return self.colors[self.get_class_index(label)]
+        return self.__colors[self.get_class_index(label)]
 
     def filter_and_hydrate_normalized_detections(self, detections):
         filtered_detections = []
 
         for (class_index, confidence, box) in detections:
-            if confidence > self.min_confidence:
-                label = self.all_classes[class_index]
+            if confidence > self.config.get('min_confidence'):
+                label = self.__all_classes[class_index]
                 if self.class_is_valid(label):
                     color = self.get_label_color(label)
                     detection = (label, confidence, box, color)
@@ -129,10 +125,10 @@ class BaseDetector:
         self.draw_detections(frame, detections)
 
     def terminate_thread(self):
-        self.thread_active = False
+        self.__thread_active = False
 
     def process_frame(self, frame, on_detections=None):
-        if self.threaded:
+        if self.config.get('threaded'):
             self._process_frame_in_thread(frame, on_detections)
         else:
             self._process_frame_without_thread(frame, on_detections)

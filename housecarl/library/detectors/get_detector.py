@@ -3,7 +3,7 @@ from housecarl.library.detectors.mobilenet import MobileNetDetector
 from housecarl.library.detectors.coral import CoralDetector
 
 def Detector(config):
-    model = config['model']
+    model = config.get('model')
 
     if model == 'mobilenet':
         return MobileNetDetector(config)

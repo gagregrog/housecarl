@@ -9,22 +9,22 @@ PUSHOVER_API_URL = "https://api.pushover.net/1/messages.json"
 
 class Pushover:
     def __init__(self, config):
-        utility.set_properties(config, self)
-        self.__verify_tokens(config)
+        self.config = config
+        self.__verify_tokens()
 
-    def __verify_tokens(self, config):
-        if self.mock:
+    def __verify_tokens(self):
+        if self.config.get('mock'):
             return
-        elif not self.user_key:
-            raise Exception("config.pushover_user_key is required")
-        elif not self.api_token:
-            raise Exception("config.pushover_api_token is required")
+        elif not self.config.get('user_key'):
+            raise Exception("config.pushover.user_key is required")
+        elif not self.config.get('api_token'):
+            raise Exception("config.pushover.api_token is required")
 
     def __send_push_notification(self, message: str, image: np.ndarray = None):
         kwargs = {
             "data": {
-                "token": self.api_token,
-                "user": self.user_key,
+                "token": self.config.get('api_token'),
+                "user": self.config.get('user_key'),
                 "message": message
             }
         }
@@ -47,7 +47,7 @@ class Pushover:
             print(json_response)
 
     def send_push_notification(self, message: str, image: np.ndarray = None):
-        if self.mock:
+        if self.config.get('mock'):
             return utility.info('PUSHOVER_MOCK: {}'.format(message))
 
         thread = Thread(target=self.__send_push_notification, args=(message, image))

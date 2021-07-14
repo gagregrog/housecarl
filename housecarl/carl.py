@@ -1,5 +1,3 @@
-from time import sleep
-
 from housecarl.library import utility
 from housecarl.library.cli import CLI
 from housecarl.library.monitor import Monitor
@@ -10,7 +8,7 @@ from housecarl.library.server.server import Server
 from housecarl.library.setup.coral import setup_coral
 
 def __main(video):
-    cli = CLI().process()
+    cli = CLI()
 
     if cli.should_setup_coral():
         return setup_coral()
@@ -32,10 +30,10 @@ def __main(video):
     pushover_config = cli.get_pushover_config()
 
     if server_config:
-        server = Server(server_config)
+        server = Server(cli, server_config)
         server.start()
 
-        if server_config["server_only"]:
+        if server_config.get("server_only"):
             return
 
     if detector_config:
@@ -91,7 +89,7 @@ def carl():
         if video:
             video.stop()
 
-        is_interrupt = type(exception).__name__ == 'KeyboardInterrupt'
+        is_interrupt = utility.get_typename(exception) == 'KeyboardInterrupt'
         
         msg = 'Keyboard Interrupt' if is_interrupt else 'Unexpected Exception'
         print('\n\n\t{}: Shutting down gracefully\n\n'.format(msg))

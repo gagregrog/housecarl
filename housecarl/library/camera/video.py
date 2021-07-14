@@ -21,7 +21,7 @@ class Video:
         """
         Instantiate an object capable of managing a CV2 Video Source.
 
-        config is a required dict and must contain the following keys:
+        config is a required CLI_Group and must contain the following keys:
             display: bool
             width: int
             src: string
@@ -42,7 +42,7 @@ class Video:
         self.__on_exit = on_exit
         self.__on_alert = on_alert
 
-        utility.set_properties(config, self)
+        self.config = config
 
         self.__fps = None
         self.__looping = False
@@ -53,17 +53,24 @@ class Video:
 
         # if src is a number like "0" coerce to an int
         try:
-            self.src = int(self.src)
-        except Exception:
-            pass
+            print(self.config.get('src'))
+            src = int(self.config.get('src'))
+            print(utility.get_typename(src))
+            config.set('src', src)
+            print(utility.get_typename(self.config.get('src')))
 
-        if self.src == 'usePiCamera':
+        except Exception as e:
+            print(str(e))
+
+        print(utility.get_typename(self.config.get('src')))
+
+        if self.config.get('src') == 'usePiCamera':
             if not pi_camera.is_picamera_installed():
                 pi_camera.setup_picamera()
 
             self.__vs = VideoStream(usePiCamera=True)
         else:
-            self.__vs = ThreadedVideoReader(self.src)
+            self.__vs = ThreadedVideoReader(self.config.get('src'))
 
     def __verify_frame_handler(self, frame_handler):
         if frame_handler is not None:
@@ -118,16 +125,16 @@ class Video:
                 if self.__on_alert is not None:
                     self.__on_alert("Video stream detected again!")
 
-            if self.width:
-                frame = imutils.resize(frame, width=int(self.width))
+            if self.config.get('width'):
+                frame = imutils.resize(frame, width=int(self.config.get('width')))
 
             if self.__frame_handler:
                 self.__call_frame_handler(frame)
 
             self.__fps.update()
 
-            if self.display:
-                cv2.imshow(self.name, frame)
+            if self.config.get('display'):
+                cv2.imshow(self.config.get('name'), frame)
 
                 key = cv2.waitKey(1) & 0xFF
 
