@@ -53,16 +53,10 @@ class Video:
 
         # if src is a number like "0" coerce to an int
         try:
-            print(self.config.get('src'))
             src = int(self.config.get('src'))
-            print(utility.get_typename(src))
             config.set('src', src)
-            print(utility.get_typename(self.config.get('src')))
-
         except Exception as e:
             print(str(e))
-
-        print(utility.get_typename(self.config.get('src')))
 
         if self.config.get('src') == 'usePiCamera':
             if not pi_camera.is_picamera_installed():
