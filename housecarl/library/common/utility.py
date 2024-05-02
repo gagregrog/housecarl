@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import shutil
 import inspect
 import requests
@@ -165,3 +166,21 @@ def get_video_dir(optional_path=''):
     video_dir = constants.recordings_path if not optional_path else os.path.abspath(os.path.expanduser(optional_path))
 
     return video_dir
+
+def read_json(json_path):
+        """
+        Parse file at json_path or return None if file doesn't exist (or isn't json).
+        """
+
+        if not os.path.exists(json_path):
+            return None
+
+        with open(json_path) as json_file:
+            try:
+                data = json.load(json_file)
+            except Exception as e:
+                error(
+                    'Could not parse JSON at: {}'.format(json_path))
+                data = None
+        
+        return data
